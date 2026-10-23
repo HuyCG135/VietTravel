@@ -178,7 +178,8 @@ export async function seed(knex) {
         if (status === "cancelled") {
             paymentStatus = weighted([["refunded", 55], ["unpaid", 45]]);
         } else if (status === "confirmed") {
-            paymentStatus = weighted([["paid", 80], ["unpaid", 20]]);
+            // Đã xác nhận = đã cọc hoặc đã trả đủ (không còn "confirmed + unpaid")
+            paymentStatus = weighted([["paid", 80], ["deposit_paid", 20]]);
         } else {
             paymentStatus = "unpaid";
         }
@@ -204,12 +205,26 @@ export async function seed(knex) {
             adults * (Number(chosen.price_default) + Number(chosen.price_moving)) +
             children * (Number(chosen.price_child) + Number(chosen.price_moving_child));
 
+        // Snapshot cọc 30% giống nghiệp vụ thật (hằng số sẽ gom về booking.constants.js sau).
+        const depositPercent = 30;
+        const depositAmount = Math.round((totalPrice * depositPercent) / 100);
+        let paidAmount = 0;
+        if (paymentStatus === "paid") paidAmount = totalPrice;
+        else if (paymentStatus === "deposit_paid") paidAmount = depositAmount;
+
+        // Đơn đã cọc: để hạn trả nốt ở tương lai, tránh bị sweep hủy ngay khi demo.
+        const balanceDueAt = paymentStatus === "deposit_paid" ? addDays(now, rand(2, 6)) : null;
+
         let updated = new Date(created);
         if (status === "confirmed") updated = addDays(created, rand(1, 4));
         else if (status === "cancelled") updated = addDays(created, rand(3, 25));
         if (updated > now) updated = new Date(now);
 
         const contactDob = adultDob();
+
+        // Đơn hủy: ghi lý do + thời điểm để UI/admin phân biệt (không dùng payment_status='cancelled').
+        const cancelledAt = status === "cancelled" ? updated : null;
+        const cancelReason = status === "cancelled" ? pick(["user", "admin"]) : null;
 
         soldByDeparture.set(
             chosen.id,
@@ -222,8 +237,14 @@ export async function seed(knex) {
             adults,
             children,
             total_price: totalPrice,
+            deposit_percent: depositPercent,
+            deposit_amount: depositAmount,
+            paid_amount: paidAmount,
+            balance_due_at: balanceDueAt,
             payment_status: paymentStatus,
             status,
+            cancel_reason: cancelReason,
+            cancelled_at: cancelledAt,
             contact_name: contact.fullname,
             contact_phone: contact.phone,
             contact_email: contact.email,
@@ -258,8 +279,14 @@ export async function seed(knex) {
             adults: booking.adults,
             children: booking.children,
             total_price: booking.total_price,
+            deposit_percent: booking.deposit_percent,
+            deposit_amount: booking.deposit_amount,
+            paid_amount: booking.paid_amount,
+            balance_due_at: booking.balance_due_at,
             payment_status: booking.payment_status,
             status: booking.status,
+            cancel_reason: booking.cancel_reason,
+            cancelled_at: booking.cancelled_at,
             contact_name: booking.contact_name,
             contact_phone: booking.contact_phone,
             contact_email: booking.contact_email,

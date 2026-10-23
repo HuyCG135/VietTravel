@@ -3,6 +3,7 @@ export async function seed(knex) {
     const tables = [
         "wishlist",
         "reviews",
+        "booking_payments",
         "passengers",
         "bookings",
         "tour_services",
