@@ -29,17 +29,18 @@ export default function BookingFlow({ user, tour }) {
     }, [success]);
 
     const goPay = async (bookingId) => {
+        if (submitting) return;
         setSubmitting(true);
         setSubmitError("");
         try {
             const pay = await createPaymentUrl(bookingId);
-            if (!pay?.success) {
+            if (!pay?.success || !pay?.vnpayUrl) {
                 throw new Error(pay?.message || "Không tạo được liên kết thanh toán");
             }
             window.location.href = pay.vnpayUrl;
+            return;
         } catch (err) {
             setSubmitError(err.message || "Đã xảy ra lỗi khi tạo liên kết thanh toán");
-        } finally {
             setSubmitting(false);
         }
     };
