@@ -91,11 +91,13 @@ export const vnpayReturn = async (req, res) => {
         return match ? Number(match[1]) : null;
     };
 
+    // Redirect về FRONTEND_URL (không dùng URL tương đối: khi dev, backend :3000 không serve frontend)
+    const frontendBaseUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
     const redirect = (status, message, bookingId) => {
-        const query = `status=${status}&message=${encodeURIComponent(message || "")}`;
-        return res.redirect(
-            bookingId ? `/payment-result?${query}&bookingId=${bookingId}` : `/payment-result?${query}`,
-        );
+        const params = new URLSearchParams({ status });
+        if (message) params.set("message", message);
+        if (bookingId) params.set("bookingId", String(bookingId));
+        return res.redirect(`${frontendBaseUrl}/payment-result?${params.toString()}`);
     };
 
     try {
