@@ -192,3 +192,39 @@ CREATE TABLE passengers (
 
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
+
+-- 12. TOUR_REQUESTS (đề xuất tour do khách gửi, AI tạo bản nháp)
+CREATE TABLE tour_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NULL,
+
+    title VARCHAR(255) NOT NULL,
+    destination VARCHAR(100) NOT NULL,
+    region VARCHAR(100),
+    duration VARCHAR(100),
+    departure_location VARCHAR(100),
+    expected_start_date DATE,
+
+    adults INT NOT NULL DEFAULT 1 CHECK (adults > 0),
+    children INT NOT NULL DEFAULT 0 CHECK (children >= 0),
+    budget_per_person DECIMAL(12,2),
+    total_estimate DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+
+    status ENUM('pending','reviewing','approved','rejected') NOT NULL DEFAULT 'pending',
+    admin_note TEXT,
+    reviewed_by INT NULL,
+    reviewed_at DATETIME,
+
+    request_data JSON,
+    ai_draft JSON,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+
+    INDEX idx_tour_requests_status_created (status, created_at),
+    INDEX idx_tour_requests_user_created (user_id, created_at)
+);

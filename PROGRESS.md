@@ -8,11 +8,11 @@
 
 ## 1. Trạng thái hiện tại
 
-- **Cập nhật gần nhất:** 2026-10-20
+- **Cập nhật gần nhất:** 2026-10-31
 - **Backend:** Express + MySQL (`db_viet_travel`, port `3307`), chạy `npm run dev` trong `backend/`.
 - **Frontend:** React + Vite, chạy `npm run dev` trong `frontend/` (proxy `/api` → `http://localhost:3000`).
 - **Đăng nhập admin test:** `admin@viettour.vn` / `123456` (field là `username`).
-- **Đã hoàn thành:** dashboard `/admin/bookings` đọc dữ liệu thật từ DB; đã có trang chi tiết `/admin/bookings/:id` (bấm dòng trong bảng để mở).
+- **Đã hoàn thành:** dashboard `/admin/bookings` đọc dữ liệu thật từ DB; đã có trang chi tiết `/admin/bookings/:id` (bấm dòng trong bảng để mở); chức năng đề xuất tour AI tại `/contact` + duyệt tại `/admin/tour-requests` (chờ test AI khi có Ollama).
 
 ---
 
@@ -92,6 +92,16 @@
 - [x] Chuẩn hoá `status` chỉ lưu `open`/`closed` (không ghi `full`)
 - [x] Verify: 170 departures, 0 trùng `(tour_id, departure_date)`; 50 booking vẫn toàn vẹn (0 lệch giá/ngày/passenger)
 - [x] Test API admin: tạo trùng ngày → `409`, tạo mới hợp lệ → `201`, xoá chuyến không có booking → `200`
+
+### ✅ Đề xuất tour do AI gợi ý (hoàn thành code 2026-10-31, chờ test AI)
+
+- [x] Migration `20261031_000013_create_tour_requests.js` tạo bảng `tour_requests`
+- [x] Cập nhật `db.sql` + `00_reset.js` cho bảng mới
+- [x] Backend feature `tour-request`: AI draft + gửi đề xuất + danh sách của tôi
+- [x] Admin API + trang `/admin/tour-requests`
+- [x] Trang `/contact`: form + chat chỉnh sửa + gửi admin + đề xuất của tôi
+- [x] Test API CRUD (tạo/gửi, mine, admin list/detail/status) + `npm run lint` + `npm run build`
+- [ ] Test AI draft bằng Ollama (chưa cài Ollama — endpoint fail-fast, không chặn phần còn lại)
 
 ### ⬜ Việc có thể làm tiếp (backlog, chưa làm)
 
@@ -197,6 +207,22 @@ Base: `/api/admin/bookings` — tất cả yêu cầu header `Authorization: Bea
 | `frontend/src/features/admin/bookings/dashboard.css`                | Style bộ lọc `.filter-box`, `.filter-select`, trạng thái tải/rỗng, dòng bấm được `.row-clickable`, link mã `.booking-code-link`     |
 | `frontend/src/routes/AdminRoutes.jsx`                               | Thêm route `bookings/:id` → trang chi tiết booking                                                                                  |
 
+### Tour Requests (mới 2026-10-31)
+
+| File                                                                  | Vai trò                                                                 |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `backend/src/features/tour-request/tourRequest.routes.js`             | Route user: draft (public, rate-limit 8/15ph), create, mine, mine/:id   |
+| `backend/src/features/tour-request/tourRequest.service.js`            | Nghiệp vụ, sanitize `request_data`, map DTO, `pickRequestData`          |
+| `backend/src/features/tour-request/tourRequest.repository.js`         | Knex: create/list/detail, join users, tìm tour tương tự                 |
+| `backend/src/features/tour-request/proposal.ai.js`                    | Gọi Ollama `qwen2.5:3b`, prompt JSON, normalize draft, retry 1 lần      |
+| `backend/src/features/admin/tour-requests/tourRequest.routes.js`      | Route admin: list, detail, đổi status + ghi chú                         |
+| `frontend/src/pages/Contact.jsx`                                      | Trang user: form, AI draft, refine chat, gửi admin, khôi phục sau login |
+| `frontend/src/features/tour-requests/`                                | API + component dùng chung + `MyRequests`                               |
+| `frontend/src/features/admin/tour-requests/`                          | API admin + trang danh sách + modal chi tiết/duyệt/từ chối              |
+| `frontend/src/routes/AdminRoutes.jsx`                                 | Thêm route `/admin/tour-requests`                                       |
+| `frontend/src/components/AdminSidebar.jsx`                            | Thêm menu "Đề xuất tour"                                                |
+| `frontend/src/features/chat/ChatWidget.jsx`                           | Thêm CTA "Tạo đề xuất với AI" → `/contact#de-xuat-tour`                 |
+
 ### Đã xóa
 
 - `frontend/src/features/admin/bookings/data/mockData.js` (và thư mục `data/`)
@@ -247,6 +273,63 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 ---
 
 ## 7. Lịch sử cập nhật
+
+### 2026-10-31 — Hoàn thiện chức năng đề xuất tour do AI gợi ý
+
+**Đã làm:**
+- [x] Backend feature `tour-request`: repository, AI draft, service, validate, controller, routes.
+- [x] Admin feature `admin/tour-requests`: list + thống kê, detail, đổi trạng thái + ghi chú.
+- [x] API:
+  - `POST /api/tour-requests/draft` — public, rate-limit 8 lần/15 phút.
+  - `POST /api/tour-requests` — user gửi đề xuất.
+  - `GET /api/tour-requests/mine`, `GET /api/tour-requests/mine/:id`.
+  - `GET /api/admin/tour-requests`, `GET /api/admin/tour-requests/:id`.
+  - `PUT /api/admin/tour-requests/:id/status`.
+- [x] AI dùng Ollama `qwen2.5:3b`, prompt JSON, nguồn tour tương tự, normalize draft; lỗi AI fail-fast nếu Ollama không chạy.
+- [x] Trang `/contact`: form nhu cầu, tạo nháp AI, chat chỉnh sửa, đăng nhập để gửi, khôi phục nháp qua `sessionStorage`, danh sách đề xuất của tôi.
+- [x] Trang admin `/admin/tour-requests`: thống kê, lọc trạng thái/tìm kiếm, phân trang, modal chi tiết, duyệt/từ chối + ghi chú, copy nội dung, link tạo tour thủ công.
+- [x] Admin detail join `users` để hiển thị khách hàng; sanitize `request_data`; validate chặt hơn.
+- [x] Thêm route admin, menu sidebar "Đề xuất tour", CTA chat widget.
+
+**File liên quan:**
+- Thêm: `backend/src/features/tour-request/*`, `backend/src/features/admin/tour-requests/*`, `frontend/src/features/tour-requests/*`, `frontend/src/features/admin/tour-requests/*`.
+- Sửa: `backend/src/app.js`, `db.sql`, `backend/db/seeds/00_reset.js`, `frontend/src/pages/Contact.jsx`, `frontend/src/routes/AdminRoutes.jsx`, `frontend/src/components/AdminSidebar.jsx`, `frontend/src/components/Modal.jsx`, `frontend/src/features/chat/ChatWidget.jsx`, `PROGRESS.md`.
+
+**Kiểm tra:**
+- `node --check` pass toàn bộ file backend mới/sửa.
+- Test API với admin `admin@viettour.vn` / `123456` và customer `at3@gmail.com` / `123456`: tạo đề xuất, mine list/detail, admin list/detail, duyệt + ghi chú; DB request id 1 đúng dữ liệu.
+- `npm run lint` + `npm run build` pass.
+- **Chưa test AI draft** vì chưa cài Ollama; endpoint fail nhanh (~0.1s) và không chặn phần gửi đề xuất.
+
+**Ghi chú / việc còn lại:**
+- Cài Ollama + `docker compose up -d --build` rồi test `/api/tour-requests/draft` và luồng chat refine.
+- Admin detail `user` join đã sửa nhưng chưa restart server để verify lại.
+- `npm run seed` sẽ reset `tour_requests` (chưa có seed demo); request test id 1 sẽ bị xóa nếu seed.
+- `status = approved` chỉ là đồng ý tổ chức; admin vẫn tạo tour thủ công.
+
+---
+
+### 2026-10-31 — Bắt đầu chức năng đề xuất tour (migration + schema)
+
+**Đã làm:**
+- [x] Tạo migration `20261031_000013_create_tour_requests.js` với bảng `tour_requests` (thông tin đề xuất, `request_data`/`ai_draft` JSON, trạng thái admin, FK user/reviewed_by).
+- [x] Cập nhật `db.sql` để DB tạo mới có bảng `tour_requests`.
+- [x] Cập nhật `backend/db/seeds/00_reset.js` xóa `tour_requests` trước `users`.
+
+**File liên quan:**
+- Thêm: `backend/db/migrations/20261031_000013_create_tour_requests.js`
+- Sửa: `db.sql`, `backend/db/seeds/00_reset.js`
+
+**Kiểm tra:**
+- `cd backend; npm run migrate` → batch 2 chạy 3 migration (gồm migration mới).
+- Query `information_schema` xác nhận bảng `tour_requests` đủ cột + JSON + FK.
+- **Chưa chạy `npm run seed`** để tránh xóa dữ liệu hiện tại.
+
+**Ghi chú / việc còn lại:**
+- Đã hoàn thiện tiếp ở mục **2026-10-31 — Hoàn thiện chức năng đề xuất tour do AI gợi ý** phía trên.
+- Khi chạy `npm run seed`, bảng `tour_requests` sẽ được reset (chưa có seed demo).
+
+---
 
 ### 2026-10-20 — Bổ sung chuyến khởi hành (tour_departures) vào seed
 

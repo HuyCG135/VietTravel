@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import TourList from "../features/admin/tours/List";
+import TourRequestList from "../features/admin/tour-requests/List";
 import ItineraryList from "../features/admin/itineraries/List";
 import DepartureList from "../features/admin/departures/List";
 import BookingDashboard from "../features/admin/bookings/DashboardBooking";
@@ -15,6 +16,7 @@ export default function AdminRoutes() {
         <Routes>
             <Route index element={<Navigate to="tours" />} />
             <Route path="tours" element={<TourList />} />
+            <Route path="tour-requests" element={<TourRequestList />} />
             <Route path="tours/new" element={<Navigate to="/admin/tours" replace />} />
             <Route path="tours/:id/edit" element={<Navigate to="/admin/tours" replace />} />
             <Route path="itineraries" element={<ItineraryList />} />

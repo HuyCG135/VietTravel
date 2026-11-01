@@ -1,6 +1,7 @@
 export async function seed(knex) {
     // Order matters for FK
     const tables = [
+        "tour_requests",
         "wishlist",
         "reviews",
         "passengers",
