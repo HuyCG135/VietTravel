@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { sendChat } from "./chat.api";
 
 const WELCOME = {
@@ -68,6 +69,17 @@ export default function ChatWidget() {
                         >
                             ✕
                         </button>
+                    </div>
+
+                    <div className="border-b border-border bg-surface px-4 py-2.5">
+                        <Link
+                            to="/contact#de-xuat-tour"
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-2 rounded-xl bg-primary-50 px-3 py-2 text-xs font-semibold text-primary no-underline transition-colors duration-150 hover:bg-primary-100"
+                        >
+                            <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
+                            Muốn một tour riêng? Tạo đề xuất với AI
+                        </Link>
                     </div>
 
                     {/* Messages */}

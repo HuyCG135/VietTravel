@@ -4,6 +4,7 @@ const SIZE_CLASSES = {
     sm: "max-w-md",
     md: "max-w-xl",
     lg: "max-w-3xl",
+    xl: "max-w-5xl",
 };
 
 // Modal shell dùng chung cho toàn app:

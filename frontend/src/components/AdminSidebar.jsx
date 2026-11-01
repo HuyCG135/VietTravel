@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const sidebarItems = [
     { to: "/admin/tours", label: "Quản lý tour", icon: "fa-solid fa-map" },
+    { to: "/admin/tour-requests", label: "Đề xuất tour", icon: "fa-solid fa-lightbulb" },
     { to: "/admin/itineraries", label: "Quản lý lịch trình", icon: "fa-solid fa-route" },
     { to: "/admin/departures", label: "Quản lý điểm khởi hành", icon: "fa-solid fa-location-dot" },
     { to: "/admin/bookings", label: "Quản lý booking", icon: "fa-solid fa-calendar-check" },
@@ -9,7 +10,6 @@ const sidebarItems = [
     { to: "/admin/tour-services", label: "Quản lý dịch vụ tour", icon: "fa-solid fa-list" },
     { to: "/admin/tour-images", label: "Quản lý hình ảnh tour", icon: "fa-solid fa-image" },
     { to: "/admin/users", label: "Quản lý user", icon: "fa-solid fa-users" },
-    { to: "/admin/statistics", label: "Thống kê", icon: "fa-solid fa-chart-column" },
 ];
 
 export default function AdminSidebar() {

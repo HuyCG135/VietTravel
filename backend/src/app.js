@@ -22,6 +22,8 @@ import bookingRoutes from "./features/booking/booking.routes.js";
 import favoriteRoutes from "./features/favorite/favorite.routes.js";
 import reviewRoutes from "./features/review/review.routes.js";
 import chatRoutes from "./features/chat/chat.routes.js";
+import tourRequestRoutes from "./features/tour-request/tourRequest.routes.js";
+import tourRequestAdminRoutes from "./features/admin/tour-requests/tourRequest.routes.js";
 import { initRag } from "./features/chat/rag/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,6 +58,8 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/tour-requests", tourRequestRoutes);
+app.use("/api/admin/tour-requests", tourRequestAdminRoutes);
 
 // Khởi tạo RAG (index tour) nền — không chặn server, tự thử lại nếu Ollama/DB chưa sẵn sàng
 initRag();
