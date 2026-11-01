@@ -24,7 +24,7 @@ Frontend (Vite):
 
 ## Setup & env
 
-- MySQL: tạo DB bằng `db.sql` hoặc migration Knex (DB tên `db_viet_tour`, utf8mb4). Backend dùng pool `mysql2` promise (`src/config/db.js`), đọc `DB_HOST/DB_USER/DB_PASSWORD/DB_NAME`. Migration/seed Knex đọc cùng env trong `backend/knexfile.js`.
+- MySQL: tạo DB bằng `db.sql` hoặc migration Knex (utf8mb4). Lưu ý tên DB: `db.sql`/`knexfile.js` dùng default `db_viet_tour`, nhưng **DB thực tế của máy dev là `db_viet_travel`** (port `3307`) — luôn lấy `DB_NAME` trong `backend/.env` làm chuẩn. Backend dùng pool `mysql2` promise (`src/config/db.js`), đọc `DB_HOST/DB_USER/DB_PASSWORD/DB_NAME`. Migration/seed Knex đọc cùng env trong `backend/knexfile.js`.
 
 ### Database (Knex migration + seed)
 
@@ -98,6 +98,24 @@ curl http://localhost:11434/api/generate -d "{\"model\":\"qwen2.5:3b\",\"prompt\
 - Ollama API tại `http://localhost:11434` — không auth, chỉ dùng local/internal.
 - Nếu cần stop: `docker compose down` (volume giữ nguyên model).
 - Nếu muốn xóa model: `docker exec ollama ollama rm qwen2.5:3b`.
+
+### Troubleshooting: chatbot trả 503 "đang khởi tạo dữ liệu" / "Không kết nối được chatbot"
+
+1. Container có chạy không: `docker ps` (phải có `ollama` Up, port 11434).
+2. **Đủ model chưa** (nguyên nhân phổ biến nhất — volume cũ chỉ có 1 phần model):
+   ```bash
+   docker exec ollama ollama list   # cần qwen2.5:3b + nomic-embed-text
+   ```
+   Thiếu thì pull (không cần build lại image):
+   ```bash
+   docker exec ollama ollama pull qwen2.5:3b
+   docker exec ollama ollama pull nomic-embed-text
+   ```
+   Lưu ý: `qwen2.5:latest` là bản 7B, **không** thay thế `qwen2.5:3b` (khác tag, tốn VRAM hơn).
+3. Test nhanh: `curl http://localhost:11434/api/tags` và
+   `curl -X POST localhost:3000/api/chat -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Xin chào"}]}'`.
+4. RAG tự build lại tối đa 10 lần, mỗi lần cách 60s; nếu đã pull model sau khi hết lượt retry thì **khởi động lại backend** (`npm run dev`).
+
 
 ## Tự hủy đơn hết hạn thanh toán (BullMQ + Redis)
 

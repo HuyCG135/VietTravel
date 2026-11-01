@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import Overview from "../features/admin/dashboard/Overview";
+import Profile from "../features/user/profile/Profile";
 import TourList from "../features/admin/tours/List";
 import TourRequestList from "../features/admin/tour-requests/List";
 import ItineraryList from "../features/admin/itineraries/List";
@@ -14,7 +16,8 @@ import Statistics from "../features/admin/statistics/List";
 export default function AdminRoutes() {
     return (
         <Routes>
-            <Route index element={<Navigate to="tours" />} />
+            <Route index element={<Overview />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="tours" element={<TourList />} />
             <Route path="tour-requests" element={<TourRequestList />} />
             <Route path="tours/new" element={<Navigate to="/admin/tours" replace />} />

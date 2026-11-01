@@ -112,6 +112,19 @@
 - [x] Test API CRUD (tạo/gửi, mine, admin list/detail/status) + `npm run lint` + `npm run build`
 - [ ] Test AI draft bằng Ollama (chưa cài Ollama — endpoint fail-fast, không chặn phần còn lại)
 
+### ✅ Dashboard Admin mới — Sidebar + Header dùng chung (2026-11-01)
+
+- [x] Tạo `frontend/src/features/admin/dashboard/` (Layout, Sidebar, Header, Overview, menuConfig, guard)
+- [x] Sidebar: logo Vietravel, menu nhóm theo role, badge, banner nâng cấp, tài khoản + đăng xuất
+- [x] Header: breadcrumb + tiêu đề, tìm kiếm nhanh (Ctrl/Cmd+K), chuông thông báo, menu tài khoản
+- [x] Menu theo role: `tour-staff` chỉ nhóm tour; `booking-staff` chỉ Booking; `admin` thấy tất cả (gồm Hình ảnh tour + Tài khoản nhân viên)
+- [x] Guard frontend chặn chưa đăng nhập / sai role; đăng nhập staff tự vào đúng trang chủ theo role
+- [x] Trang Tổng quan `/admin` dựng đủ widget theo thiết kế (KPI, doanh thu, top điểm đến, chuyến đi, gói tour, tin nhắn, booking, lịch, chuyến sắp đi, hoạt động)
+- [x] Dữ liệu dashboard hard-code trong `data/mockData.js` (một chỗ duy nhất để thay API sau này)
+- [x] Giữ nguyên toàn bộ nội dung các trang quản trị cũ; chỉ thay vỏ `AdminLayout`
+- [x] Thêm `/admin/profile` dùng lại trang hồ sơ người dùng
+- [x] `npm run lint` + `npm run build` pass
+
 ### ⬜ Việc có thể làm tiếp (backlog, chưa làm)
 
 - [ ] Nút **Add Booking** trên dashboard — đã bỏ theo yêu cầu, chỉ thêm lại khi cần
@@ -218,19 +231,19 @@ Base: `/api/admin/bookings` — tất cả yêu cầu header `Authorization: Bea
 
 ### Tour Requests (mới 2026-10-31)
 
-| File                                                                  | Vai trò                                                                 |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `backend/src/features/tour-request/tourRequest.routes.js`             | Route user: draft (public, rate-limit 8/15ph), create, mine, mine/:id   |
-| `backend/src/features/tour-request/tourRequest.service.js`            | Nghiệp vụ, sanitize `request_data`, map DTO, `pickRequestData`          |
-| `backend/src/features/tour-request/tourRequest.repository.js`         | Knex: create/list/detail, join users, tìm tour tương tự                 |
-| `backend/src/features/tour-request/proposal.ai.js`                    | Gọi Ollama `qwen2.5:3b`, prompt JSON, normalize draft, retry 1 lần      |
-| `backend/src/features/admin/tour-requests/tourRequest.routes.js`      | Route admin: list, detail, đổi status + ghi chú                         |
-| `frontend/src/pages/Contact.jsx`                                      | Trang user: form, AI draft, refine chat, gửi admin, khôi phục sau login |
-| `frontend/src/features/tour-requests/`                                | API + component dùng chung + `MyRequests`                               |
-| `frontend/src/features/admin/tour-requests/`                          | API admin + trang danh sách + modal chi tiết/duyệt/từ chối              |
-| `frontend/src/routes/AdminRoutes.jsx`                                 | Thêm route `/admin/tour-requests`                                       |
-| `frontend/src/components/AdminSidebar.jsx`                            | Thêm menu "Đề xuất tour"                                                |
-| `frontend/src/features/chat/ChatWidget.jsx`                           | Thêm CTA "Tạo đề xuất với AI" → `/contact#de-xuat-tour`                 |
+| File                                                             | Vai trò                                                                 |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `backend/src/features/tour-request/tourRequest.routes.js`        | Route user: draft (public, rate-limit 8/15ph), create, mine, mine/:id   |
+| `backend/src/features/tour-request/tourRequest.service.js`       | Nghiệp vụ, sanitize `request_data`, map DTO, `pickRequestData`          |
+| `backend/src/features/tour-request/tourRequest.repository.js`    | Knex: create/list/detail, join users, tìm tour tương tự                 |
+| `backend/src/features/tour-request/proposal.ai.js`               | Gọi Ollama `qwen2.5:3b`, prompt JSON, normalize draft, retry 1 lần      |
+| `backend/src/features/admin/tour-requests/tourRequest.routes.js` | Route admin: list, detail, đổi status + ghi chú                         |
+| `frontend/src/pages/Contact.jsx`                                 | Trang user: form, AI draft, refine chat, gửi admin, khôi phục sau login |
+| `frontend/src/features/tour-requests/`                           | API + component dùng chung + `MyRequests`                               |
+| `frontend/src/features/admin/tour-requests/`                     | API admin + trang danh sách + modal chi tiết/duyệt/từ chối              |
+| `frontend/src/routes/AdminRoutes.jsx`                            | Thêm route `/admin/tour-requests`                                       |
+| `frontend/src/components/AdminSidebar.jsx`                       | Thêm menu "Đề xuất tour"                                                |
+| `frontend/src/features/chat/ChatWidget.jsx`                      | Thêm CTA "Tạo đề xuất với AI" → `/contact#de-xuat-tour`                 |
 
 ### Đã xóa
 
@@ -240,7 +253,7 @@ Base: `/api/admin/bookings` — tất cả yêu cầu header `Authorization: Bea
 
 ## 5. Lưu ý khi làm tiếp
 
-- Backend dùng DB **`db_viet_travel`** trên port **`3307`** (xem `backend/.env`). Công cụ MySQL MCP của môi trường có thể trỏ sang DB khác (`db_viet_tour`) — **đừng sửa dữ liệu test qua MCP**, hãy kiểm tra bằng chính backend/Knex.
+- Backend dùng DB **`db_viet_travel`** trên port **`3307`** (xem `backend/.env`). MySQL MCP trong `~/.config/opencode/opencode.jsonc` đã trỏ đúng `MYSQL_DB=db_viet_travel` (2026-11-01); trước đó trỏ `db_viet_tour` ⇒ server MCP chết với "MCP server process exited with code 1" (thực chất là `ER_BAD_DB_ERROR: Unknown database`). Nếu gặp lại: bật `ENABLE_LOGGING=true` trong env của MCP để thấy lỗi thật, và **đừng sửa dữ liệu test qua MCP** — kiểm tra bằng chính backend/Knex.
 - `mysql2` trả `DECIMAL`/`SUM` dạng **string** → luôn `Number(...)` trước khi tính toán/format.
 - Route tĩnh (`/stats`, `/trips`, `/top-packages`) phải khai báo **trước** `/:id`.
 - Seed hiện tại: **33 user** (3 nội bộ + 30 khách), **50 booking**, **172 passenger**, trải 13 tháng với đủ trạng thái `confirmed/paid`, `confirmed/unpaid`, `pending/unpaid`, `cancelled/refunded`, `cancelled/unpaid`. Chạy `cd backend; npm run seed` để dựng lại DB sạch (reset id từ 1).
@@ -283,9 +296,75 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ## 7. Lịch sử cập nhật
 
+### 2026-11-01 — Sửa MCP `mysql` chết với "MCP server process exited with code 1"
+
+**Đã làm:**
+
+- [x] Chẩn đoán: MCP `pdf` vẫn `mcp connected tools=9`; chỉ MCP `mysql` chết ngay sau `initialize`. Log OpenCode chỉ báo `MCP server process exited with code 1` (không có stderr) vì `@benborla29/mcp-server-mysql` tắt log trừ khi `ENABLE_LOGGING=true`.
+- [x] Chạy tay với `ENABLE_LOGGING=true` → lộ nguyên nhân thật: `Error: Unknown database 'db_viet_tour'` (`ER_BAD_DB_ERROR`, errno 1049). `dist/index.js` test connection khi khởi động và `safeExit(1)` nếu fail ⇒ OpenCode thấy process exit 1.
+- [x] Nguyên nhân gốc: `~/.config/opencode/opencode.jsonc` → `mcp.mysql.environment.MYSQL_DB = "db_viet_tour"` (tên cũ từ project `travel-website-api`), trong khi DB thật là `db_viet_travel` (`backend/.env`).
+- [x] Sửa `MYSQL_DB` → `db_viet_travel`, thêm `ENABLE_LOGGING: "true"` để lần sau lỗi hiện rõ.
+
+**File liên quan:**
+
+- Sửa: `C:\Users\HELLO\.config\opencode\opencode.jsonc` (ngoài repo), `AGENTS.md` (làm rõ tên DB default vs thực tế), `PROGRESS.md`. Không đổi code backend/frontend.
+
+**Kiểm tra:**
+
+- Spawn thủ công: `Server started and listening on stdio` (không còn exit 1).
+- MCP reconnect tự động; gọi `mysql_query` → `{"tours": 18, "bookings": 50, "db": "db_viet_travel"}`.
+
+**Ghi chú / việc còn lại:**
+
+- Không đổi default `db_viet_tour` trong `db.sql` / `knexfile.js` / `.env.example` / `README.md` (giữ làm template) — `.env` luôn thắng.
+- Nếu MCP lại fail: bật `ENABLE_LOGGING=true` rồi xem stderr trước khi đoán.
+
+### 2026-11-01 — Sửa lỗi không kết nối được trợ lý AI (Ollama thiếu model)
+
+**Đã làm:**
+
+- [x] Chẩn đoán: container `ollama` vẫn chạy (port 11434), nhưng volume `ollama_data` chỉ có `qwen2.5:latest` (7B) — **thiếu `nomic-embed-text`** nên RAG không build được (`/api/embed` → 404) ⇒ `/api/chat` luôn trả 503 "Trợ lý du lịch đang khởi tạo dữ liệu"; **thiếu `qwen2.5:3b`** đúng như `.env` (`OLLAMA_MODEL=qwen2.5:3b`).
+- [x] Pull lại trong container: `docker exec ollama ollama pull nomic-embed-text` và `docker exec ollama ollama pull qwen2.5:3b`.
+- [x] Test: `/api/embed` 200 (768 dims), `/api/chat` với `qwen2.5:3b` 200, `POST /api/chat` qua backend 200 trả lời + `sources`.
+
+**File liên quan:**
+
+- Sửa: `AGENTS.md` (thêm mục kiểm tra/khắc phục model thiếu), `PROGRESS.md`. Không đổi code.
+
+**Kiểm tra:**
+
+- `docker exec ollama ollama list` → có `qwen2.5:3b` (1.9 GB) + `nomic-embed-text` (274 MB).
+- `curl -X POST localhost:3000/api/chat` với câu hỏi tour → 200, có nội dung + danh sách tour nguồn.
+
+**Ghi chú / việc còn lại:**
+
+- `Dockerfile.ollama` chỉ copy model vào volume khi volume **trống**; nếu volume đã tồn tại (máy khác/phiên bản cũ) thì `--build` không thêm model ⇒ phải pull thủ công như trên.
+
+### 2026-11-01 — Khôi phục DB local sau lỗi "Unknown database"
+
+**Đã làm:**
+
+- [x] `npm run db:reset` lỗi `Error: Unknown database 'db_viet_travel'` vì MySQL tại `localhost:3307` chưa có DB này (không phải lỗi cấu hình — `.env` dùng `DB_NAME=db_viet_travel`, port `3307`).
+- [x] Tạo lại DB: `CREATE DATABASE IF NOT EXISTS db_viet_travel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`.
+- [x] Chạy lại `npm run db:reset` → 14 migration + 6 seed file thành công.
+
+**File liên quan:**
+
+- Sửa: `PROGRESS.md`. Không sửa code/`.env`.
+
+**Kiểm tra:**
+
+- `npm run db:reset` pass: `Batch 1 run: 14 migrations`, `Ran 6 seed files`.
+- Đếm bản ghi: users 33, tours 18, tour_images 90, tour_departures 170, bookings 50, reviews 28, services 10.
+
+**Ghi chú / việc còn lại:**
+
+- Nếu MySQL bị reset/xóa DB lần nữa, tạo DB trước rồi mới chạy migrate (`knex` không tự tạo database).
+
 ### 2026-10-31 — Hoàn thiện chức năng đề xuất tour do AI gợi ý
 
 **Đã làm:**
+
 - [x] Backend feature `tour-request`: repository, AI draft, service, validate, controller, routes.
 - [x] Admin feature `admin/tour-requests`: list + thống kê, detail, đổi trạng thái + ghi chú.
 - [x] API:
@@ -301,16 +380,19 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 - [x] Thêm route admin, menu sidebar "Đề xuất tour", CTA chat widget.
 
 **File liên quan:**
+
 - Thêm: `backend/src/features/tour-request/*`, `backend/src/features/admin/tour-requests/*`, `frontend/src/features/tour-requests/*`, `frontend/src/features/admin/tour-requests/*`.
 - Sửa: `backend/src/app.js`, `db.sql`, `backend/db/seeds/00_reset.js`, `frontend/src/pages/Contact.jsx`, `frontend/src/routes/AdminRoutes.jsx`, `frontend/src/components/AdminSidebar.jsx`, `frontend/src/components/Modal.jsx`, `frontend/src/features/chat/ChatWidget.jsx`, `PROGRESS.md`.
 
 **Kiểm tra:**
+
 - `node --check` pass toàn bộ file backend mới/sửa.
 - Test API với admin `admin@viettour.vn` / `123456` và customer `at3@gmail.com` / `123456`: tạo đề xuất, mine list/detail, admin list/detail, duyệt + ghi chú; DB request id 1 đúng dữ liệu.
 - `npm run lint` + `npm run build` pass.
 - **Chưa test AI draft** vì chưa cài Ollama; endpoint fail nhanh (~0.1s) và không chặn phần gửi đề xuất.
 
 **Ghi chú / việc còn lại:**
+
 - Cài Ollama + `docker compose up -d --build` rồi test `/api/tour-requests/draft` và luồng chat refine.
 - Admin detail `user` join đã sửa nhưng chưa restart server để verify lại.
 - `npm run seed` sẽ reset `tour_requests` (chưa có seed demo); request test id 1 sẽ bị xóa nếu seed.
@@ -321,20 +403,24 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 ### 2026-10-31 — Bắt đầu chức năng đề xuất tour (migration + schema)
 
 **Đã làm:**
+
 - [x] Tạo migration `20261031_000013_create_tour_requests.js` với bảng `tour_requests` (thông tin đề xuất, `request_data`/`ai_draft` JSON, trạng thái admin, FK user/reviewed_by).
 - [x] Cập nhật `db.sql` để DB tạo mới có bảng `tour_requests`.
 - [x] Cập nhật `backend/db/seeds/00_reset.js` xóa `tour_requests` trước `users`.
 
 **File liên quan:**
+
 - Thêm: `backend/db/migrations/20261031_000013_create_tour_requests.js`
 - Sửa: `db.sql`, `backend/db/seeds/00_reset.js`
 
 **Kiểm tra:**
+
 - `cd backend; npm run migrate` → batch 2 chạy 3 migration (gồm migration mới).
 - Query `information_schema` xác nhận bảng `tour_requests` đủ cột + JSON + FK.
 - **Chưa chạy `npm run seed`** để tránh xóa dữ liệu hiện tại.
 
 **Ghi chú / việc còn lại:**
+
 - Đã hoàn thiện tiếp ở mục **2026-10-31 — Hoàn thiện chức năng đề xuất tour do AI gợi ý** phía trên.
 - Khi chạy `npm run seed`, bảng `tour_requests` sẽ được reset (chưa có seed demo).
 
@@ -343,20 +429,24 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 ### 2026-10-20 — Bổ sung chuyến khởi hành (tour_departures) vào seed
 
 **Đã làm:**
+
 - [x] Tạo `backend/db/seed-data/departures.js` — `EXTRA_DEPARTURES` key theo slug tour, 2 chuyến/tour (36 chuyến), trải `2026-11-20` → `2027-01-30`.
 - [x] Sửa `02_tours.js`: gộp `t.departures` (tours.js) + `EXTRA_DEPARTURES[slug]`, **chặn trùng ngày** bằng `Set` trước khi insert (DB unique `uk_tour_date`).
 - [x] Chuẩn hoá `status` khi seed: chỉ lưu `open`/`closed`, không ghi `full` (hệ thống tự suy ra từ `seats_available <= 0`).
 
 **File liên quan:**
+
 - Thêm: `backend/db/seed-data/departures.js`
 - Sửa: `backend/db/seeds/02_tours.js`, `AGENTS.md`
 
 **Kiểm tra:**
+
 - `cd backend; npm run seed` → 170 departures; query 0 cặp `(tour_id, departure_date)` trùng; status lưu DB chỉ `open`/`closed`.
 - Toàn vẹn booking sau seed: 50 booking, 173 passenger, 0 lệch `total_price`, 0 đơn tạo sau ngày khởi hành, 0 lệch số passenger.
 - API admin: `GET /api/admin/departures` thấy chuyến mới; POST trùng ngày → `409`; POST hợp lệ → `201`; DELETE chuyến test → `200` (đã xoá, DB về 170).
 
 **Ghi chú / quy tắc khi thêm chuyến:**
+
 - `(tour_id, departure_date)` **duy nhất** → không trùng ngày cho cùng tour.
 - Ngày ≥ hôm nay + 3 (`MIN_LEAD_DAYS`); `seats_total ≥ 1`; `0 ≤ seats_available ≤ seats_total`; `price_moving* ≥ 0`; `status` chỉ `open`/`closed`.
 - Chuyến đã có booking thì **không xoá được** (FK RESTRICT) → dùng `status = "closed"`.
@@ -367,6 +457,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 ### 2026-10-20 — Fix thẻ Doanh thu bị tràn khung
 
 **Đã làm:**
+
 - [x] Xác định nguyên nhân: `.stat-card-body` là flex nhưng khối chữ không được phép co (`min-width: auto`) nên số tiền dài đẩy sparkline/tràn card.
 - [x] Cho khối chữ co lại: `min-width: 0`, `flex: 1 1 auto`; giảm gap 12 → 8px.
 - [x] Sparkline co theo thẻ: `72 → 60 → 48 → 38 → 32px`.
@@ -374,9 +465,11 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 - [x] `.stat-change` cho phép xuống dòng để không tràn ngang.
 
 **File liên quan:**
+
 - Sửa: `frontend/src/features/admin/bookings/dashboard.css`
 
 **Kiểm tra:**
+
 - `npm run lint` pass, `npm run build` pass.
 - Đã kiểm tra CSS sau build vẫn giữ `container-type` + `@container`.
 

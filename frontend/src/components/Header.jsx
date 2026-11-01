@@ -8,8 +8,10 @@ const navItems = [
     { to: "/tours", label: "Tours" },
     { to: "/about", label: "Về chúng tôi" },
     { to: "/contact", label: "Liên hệ" },
-    { to: "/admin", label: "Admin", adminOnly: true },
+    { to: "/admin", label: "Quản trị", staffOnly: true },
 ];
+
+const STAFF_ROLES = ["admin", "tour-staff", "booking-staff"];
 
 export default function Header() {
     const user = getUser();
@@ -34,7 +36,7 @@ export default function Header() {
 
             <nav className="hidden lg:flex flex-1 justify-center items-center gap-6">
                 {navItems
-                    .filter((item) => !item.adminOnly || user?.role === "admin") // Thêm filter để chỉ hiển thị mục Admin nếu người dùng là admin
+                    .filter((item) => !item.staffOnly || STAFF_ROLES.includes(user?.role)) // Chỉ nhân viên mới thấy mục Quản trị
                     .map((item) => (
                         <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
                             {item.label}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { login } from "./auth.api";
+import { homeForRole, isStaff } from "../admin/dashboard/menuConfig";
 import bgLogin from "../../assets/images/bgLogin.jpg";
 import logoIcon from "../../assets/images/icon.svg";
 
@@ -82,12 +83,15 @@ export default function Login() {
         try {
             const data = await login(form.username, form.password);
             if (data.success) {
+                const loggedUser = data?.data?.user;
                 localStorage.setItem("token", data?.data?.token || "");
-                localStorage.setItem("user", JSON.stringify(data?.data?.user || null));
-                if (data.data?.user?.is_verified === 0) {
-                    navigate(`/register-success?email=${encodeURIComponent(data.data.user.email || "")}`);
+                localStorage.setItem("user", JSON.stringify(loggedUser || null));
+                if (loggedUser?.is_verified === 0) {
+                    navigate(`/register-success?email=${encodeURIComponent(loggedUser.email || "")}`);
                 } else {
-                    navigate(redirectTarget);
+                    // Nhân viên vào thẳng khu quản trị theo role; khách về trang chủ.
+                    const fallback = isStaff(loggedUser?.role) ? homeForRole(loggedUser.role) : "/";
+                    navigate(redirectTarget !== "/" ? redirectTarget : fallback);
                 }
             } else {
                 setMessage({ text: data.message || "Đăng nhập thất bại.", type: "danger" });

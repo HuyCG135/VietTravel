@@ -1,0 +1,2089 @@
+/* ============================================================
+   Dashboard Admin — vỏ chung (Sidebar + Header) và các widget
+   Toàn bộ selector được scope dưới .admin-shell / .dashboard-page
+   để không đụng style các trang nghiệp vụ hiện có.
+   ============================================================ */
+
+/* Bỏ khoảng padding-top 70px của Header public khi vào khu quản trị. */
+body.admin-shell-active {
+    padding-top: 0;
+}
+
+.admin-shell {
+    --sb-width: 264px;
+    --header-height: 68px;
+    min-height: 100vh;
+    background: var(--color-background);
+    color: var(--color-foreground);
+}
+
+/* ===================== Sidebar ===================== */
+.admin-shell .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: var(--sb-width);
+    padding: 16px 14px 14px;
+    overflow-y: auto;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+}
+
+.admin-shell .sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-shell .sidebar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.admin-shell .logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 6px 14px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-foreground);
+    text-decoration: none;
+}
+
+.admin-shell .logo-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border: 1px solid var(--color-primary-100);
+    border-radius: 11px;
+    background: var(--color-primary-50);
+}
+
+.admin-shell .logo-text {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.admin-shell .logo-tag {
+    margin-left: auto;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-shell .menu {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.admin-shell .menu-group-label {
+    margin: 0 0 7px;
+    padding: 0 10px;
+    color: #94a3b8;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.admin-shell .menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-shell .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 11px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.admin-shell .menu-item svg {
+    flex: none;
+    color: #7c8ba1;
+    transition: color 150ms ease;
+}
+
+.admin-shell .menu-item:hover {
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+}
+
+.admin-shell .menu-item:hover svg {
+    color: var(--color-primary);
+}
+
+.admin-shell .menu-item.active {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: #fff;
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.admin-shell .menu-item.active svg {
+    color: #fff;
+}
+
+.admin-shell .menu-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.admin-shell .menu-item.active .menu-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+/* Banner nâng cấp */
+.admin-shell .upgrade-card {
+    position: relative;
+    margin-top: auto;
+    padding: 15px 14px 14px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: linear-gradient(150deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: #fff;
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.admin-shell .upgrade-card::after {
+    position: absolute;
+    top: -52px;
+    right: -42px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    content: "";
+}
+
+.admin-shell .upgrade-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.admin-shell .upgrade-card p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.admin-shell .upgrade-card strong {
+    color: #fff;
+    font-size: 12.5px;
+}
+
+.admin-shell .upgrade-card button {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin-top: 11px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-primary-dark);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 150ms ease;
+}
+
+.admin-shell .upgrade-card button:hover {
+    transform: translateY(-1px);
+}
+
+/* Tài khoản ở đáy sidebar */
+.admin-shell .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 6px 2px;
+    border-top: 1px solid var(--color-border);
+}
+
+.admin-shell .sidebar-user img {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.admin-shell .sidebar-user-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.admin-shell .sidebar-user-info strong {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-shell .sidebar-user-info small {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-shell .sidebar-logout {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        border-color 150ms ease;
+}
+
+.admin-shell .sidebar-logout:hover {
+    border-color: color-mix(in srgb, var(--color-danger) 25%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+    color: var(--color-danger);
+}
+
+/* Overlay mobile (chỉ hiện ở breakpoint nhỏ) */
+.admin-shell .sidebar-overlay {
+    display: none;
+}
+
+/* ===================== Main ===================== */
+.admin-shell .main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-left: var(--sb-width);
+}
+
+/* ===================== Header ===================== */
+.admin-shell .header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: var(--header-height);
+    padding: 9px 24px;
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+}
+
+.admin-shell .header-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.admin-shell .header-menu-btn {
+    display: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+}
+
+.admin-shell .header-title {
+    min-width: 0;
+}
+
+.admin-shell .header-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.admin-shell .header-breadcrumb span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.admin-shell .header-breadcrumb .sep {
+    color: #cbd5e1;
+    font-style: normal;
+}
+
+.admin-shell .header-breadcrumb strong {
+    color: var(--color-foreground);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-shell .header-title h1 {
+    margin: 1px 0 0;
+    color: var(--color-foreground);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.admin-shell .header-subtitle {
+    margin: 2px 0 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-shell .header-right {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* Ô tìm kiếm */
+.admin-shell .header-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 286px;
+    height: 40px;
+    padding: 0 10px 0 12px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: #f1f5f9;
+    color: #94a3b8;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.admin-shell .header-search.is-open,
+.admin-shell .header-search:focus-within {
+    border-color: var(--color-primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.admin-shell .header-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-foreground);
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.admin-shell .header-search input::placeholder {
+    color: #94a3b8;
+}
+
+.admin-shell .header-search input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.admin-shell .header-search kbd {
+    flex: none;
+    padding: 2px 5px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: #fff;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.admin-shell .header-search-icon {
+    flex: none;
+}
+
+/* Nút chuông */
+.admin-shell .header-action-wrap {
+    position: relative;
+}
+
+.admin-shell .header-icon-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: 11px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        border-color 150ms ease;
+}
+
+.admin-shell .header-icon-btn:hover {
+    border-color: var(--color-primary-100);
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+}
+
+.admin-shell .bell-dot {
+    position: absolute;
+    top: 4px;
+    right: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: var(--color-danger);
+    color: #fff;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* Khối tài khoản */
+.admin-shell .header-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 7px 3px 3px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+.admin-shell .header-user:hover {
+    border-color: var(--color-border);
+    background: #f8fafc;
+}
+
+.admin-shell .header-user img {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.admin-shell .header-user-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 150px;
+    line-height: 1.2;
+}
+
+.admin-shell .header-user-text strong {
+    overflow: hidden;
+    max-width: 100%;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-shell .header-user-text small {
+    color: var(--color-muted);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.admin-shell .header-user > svg {
+    color: #94a3b8;
+    transition: transform 150ms ease;
+}
+
+.admin-shell .header-user > svg.is-rotated {
+    transform: rotate(180deg);
+}
+
+/* Dropdown dùng chung */
+.admin-shell .header-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 70;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+    animation: admin-panel-in 160ms ease-out;
+}
+
+@keyframes admin-panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-shell .panel-label {
+    margin: 2px 6px 7px;
+    color: #94a3b8;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-shell .panel-empty {
+    margin: 0;
+    padding: 8px 8px 12px;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.admin-shell .search-panel {
+    left: 0;
+    right: auto;
+    width: 322px;
+    padding: 10px;
+}
+
+.admin-shell .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 300px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.admin-shell .search-results button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 7px 8px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.admin-shell .search-results button:hover {
+    background: var(--color-primary-50);
+}
+
+.admin-shell .search-result-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 8px;
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+}
+
+.admin-shell .search-result-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.admin-shell .search-result-text strong {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-shell .search-result-text small {
+    color: var(--color-muted);
+    font-size: 10px;
+}
+
+/* Panel thông báo */
+.admin-shell .bell-panel {
+    width: 336px;
+}
+
+.admin-shell .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-shell .panel-head strong {
+    font-size: 13px;
+}
+
+.admin-shell .panel-head button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    color: var(--color-primary);
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-shell .bell-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 340px;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.admin-shell .bell-list button {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.admin-shell .bell-list button:hover {
+    background: #f8fafc;
+}
+
+.admin-shell .bell-list button.is-unread {
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+.admin-shell .bell-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-primary);
+}
+
+.admin-shell .bell-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.admin-shell .bell-text strong {
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.admin-shell .bell-text small {
+    color: var(--color-muted);
+    font-size: 10.5px;
+    line-height: 1.4;
+}
+
+.admin-shell .bell-text em {
+    color: #94a3b8;
+    font-size: 9.5px;
+    font-style: normal;
+}
+
+.admin-shell .bell-unread-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+}
+
+/* Panel tài khoản */
+.admin-shell .account-panel {
+    width: 252px;
+}
+
+.admin-shell .account-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-shell .account-head img {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.admin-shell .account-head div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.admin-shell .account-head strong {
+    overflow: hidden;
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-shell .account-head small {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-shell .account-panel ul {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+}
+
+.admin-shell .account-panel ul button,
+.admin-shell .account-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #475569;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.admin-shell .account-panel ul button:hover {
+    background: #f8fafc;
+    color: var(--color-foreground);
+}
+
+.admin-shell .account-logout {
+    margin: 0 6px 8px;
+    width: calc(100% - 12px);
+    color: var(--color-danger);
+}
+
+.admin-shell .account-logout:hover {
+    background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+}
+
+/* ===================== Nội dung ===================== */
+.admin-shell .admin-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 22px 24px 30px;
+}
+
+.admin-shell .admin-content > * {
+    animation: admin-dash-in 220ms ease-out;
+}
+
+@keyframes admin-dash-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-shell .admin-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 24px 18px;
+    border-top: 1px solid var(--color-border);
+    color: #94a3b8;
+    font-size: 10.5px;
+}
+
+/* ===================== Bố cục dashboard ===================== */
+.dashboard-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.dashboard-page .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(300px, 0.95fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.dashboard-page .col-left,
+.dashboard-page .col-right,
+.dashboard-page .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.dashboard-page .row-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
+    gap: 18px;
+}
+
+.dashboard-page .row-3 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    gap: 18px;
+    align-items: stretch;
+}
+
+/* ===================== Card chung ===================== */
+.dashboard-page .dash-card {
+    min-width: 0;
+    padding: 16px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.dashboard-page .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dashboard-page .card-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--color-foreground);
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.dashboard-page .card-subtitle {
+    margin: 2px 0 0;
+    color: var(--color-muted);
+    font-size: 11px;
+}
+
+.dashboard-page .card-link {
+    flex: none;
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dashboard-page .card-link:hover {
+    text-decoration: underline;
+}
+
+.dashboard-page .card-chip {
+    flex: none;
+    padding: 4px 9px;
+    border: 1px solid var(--color-primary-100);
+    border-radius: 999px;
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .title-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+}
+
+/* ===================== Thẻ KPI ===================== */
+.dashboard-page .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.dashboard-page .stat-card {
+    container-type: inline-size;
+    padding: 14px 16px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition:
+        box-shadow 200ms ease,
+        transform 200ms ease;
+}
+
+.dashboard-page .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+}
+
+.dashboard-page .stat-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dashboard-page .stat-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 10px;
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+}
+
+.dashboard-page .stat-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .stat-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex: none;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .stat-trend.up {
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+    color: var(--color-success);
+}
+
+.dashboard-page .stat-trend.down {
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    color: var(--color-danger);
+}
+
+.dashboard-page .stat-card-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dashboard-page .stat-main {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.dashboard-page .stat-value {
+    display: block;
+    margin-top: 10px;
+    color: var(--color-foreground);
+    font-size: 22px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.dashboard-page .stat-note {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.dashboard-page .stat-spark {
+    width: 78px;
+    height: 42px;
+    flex: none;
+}
+
+@container (max-width: 260px) {
+    .dashboard-page .stat-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+    }
+
+    .dashboard-page .stat-value {
+        margin-top: 8px;
+        font-size: 19px;
+    }
+
+    .dashboard-page .stat-spark {
+        width: 54px;
+        height: 34px;
+    }
+
+    .dashboard-page .stat-note {
+        display: none;
+    }
+}
+
+/* ===================== Doanh thu ===================== */
+.dashboard-page .revenue-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-page .segmented {
+    display: inline-flex;
+    flex: none;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 9px;
+    background: #f1f5f9;
+}
+
+.dashboard-page .segmented button {
+    padding: 5px 9px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--color-muted);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        color 150ms ease;
+}
+
+.dashboard-page .segmented button.active {
+    background: #fff;
+    color: var(--color-primary-dark);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.dashboard-page .revenue-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.dashboard-page .revenue-summary strong {
+    font-size: 24px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.dashboard-page .growth-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+    color: var(--color-success);
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.dashboard-page .revenue-chart {
+    width: 100%;
+    height: 208px;
+    margin-top: 8px;
+}
+
+/* ===================== Top điểm đến ===================== */
+.dashboard-page .donut-wrap {
+    position: relative;
+    height: 176px;
+    margin-top: -4px;
+}
+
+.dashboard-page .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Ghi đè transform của .donut-center bên dashboard.css cũ (nếu đã tải). */
+    transform: none;
+    text-align: center;
+    pointer-events: none;
+}
+
+.dashboard-page .donut-center strong {
+    color: var(--color-foreground);
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-page .donut-center span {
+    color: var(--color-muted);
+    font-size: 9.5px;
+}
+
+.dashboard-page .destination-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-page .destination-list li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+}
+
+.dashboard-page .destination-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+}
+
+.dashboard-page .destination-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: #334155;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .destination-value {
+    color: var(--color-muted);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.dashboard-page .destination-percent {
+    min-width: 32px;
+    color: var(--color-foreground);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* ===================== Tổng quan chuyến đi ===================== */
+.dashboard-page .trips-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.dashboard-page .trip-row-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+}
+
+.dashboard-page .trip-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+}
+
+.dashboard-page .trip-dot.success,
+.dashboard-page .trip-fill.success {
+    background: var(--color-success);
+}
+
+.dashboard-page .trip-dot.primary,
+.dashboard-page .trip-fill.primary {
+    background: var(--color-primary);
+}
+
+.dashboard-page .trip-dot.danger,
+.dashboard-page .trip-fill.danger {
+    background: var(--color-danger);
+}
+
+.dashboard-page .trip-label {
+    flex: 1;
+    color: #475569;
+    font-weight: 600;
+}
+
+.dashboard-page .trip-row-head strong {
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.dashboard-page .trip-row-head em {
+    min-width: 30px;
+    color: var(--color-muted);
+    font-size: 10px;
+    font-style: normal;
+    text-align: right;
+}
+
+.dashboard-page .trip-track {
+    height: 6px;
+    margin-top: 5px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #f1f5f9;
+}
+
+.dashboard-page .trip-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+/* ===================== Gói du lịch ===================== */
+.dashboard-page .package-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-page .package-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 12px;
+    transition: background 150ms ease;
+}
+
+.dashboard-page .package-list li:hover {
+    background: #f8fafc;
+}
+
+.dashboard-page .package-list img {
+    width: 52px;
+    height: 52px;
+    flex: none;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.dashboard-page .package-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.dashboard-page .package-tag {
+    color: var(--color-primary);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.dashboard-page .package-info strong {
+    overflow: hidden;
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .package-info small {
+    color: var(--color-muted);
+    font-size: 10px;
+}
+
+.dashboard-page .package-price {
+    flex: none;
+    color: var(--color-primary-dark);
+    font-size: 11.5px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* ===================== Tin nhắn ===================== */
+.dashboard-page .messages-card {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+
+.dashboard-page .message-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 400px;
+    margin: 0;
+    padding: 0 4px 0 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.dashboard-page .message-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 8px;
+    border-radius: 11px;
+}
+
+.dashboard-page .message-list li:hover {
+    background: #f8fafc;
+}
+
+.dashboard-page .message-list li.is-unread {
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.dashboard-page .message-list img {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.dashboard-page .message-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-page .message-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.dashboard-page .message-top strong {
+    overflow: hidden;
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .message-top span {
+    flex: none;
+    color: #94a3b8;
+    font-size: 9.5px;
+}
+
+.dashboard-page .message-body p {
+    margin: 2px 0 0;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .message-unread {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* ===================== Bảng booking ===================== */
+.dashboard-page .bookings-card {
+    padding-bottom: 6px;
+}
+
+.dashboard-page .table-wrap {
+    margin: 0 -18px;
+    padding: 0 18px;
+    overflow-x: auto;
+}
+
+.dashboard-page .dash-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+}
+
+.dashboard-page .dash-table th {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+    color: #94a3b8;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.dashboard-page .dash-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 11.5px;
+    vertical-align: middle;
+}
+
+.dashboard-page .dash-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dashboard-page .dash-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.dashboard-page .cell-customer {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.dashboard-page .cell-customer strong {
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.dashboard-page .cell-customer small {
+    color: var(--color-muted);
+    font-size: 9.5px;
+}
+
+.dashboard-page .cell-muted {
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+.dashboard-page .cell-price {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .dash-status {
+    display: inline-flex;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .dash-status.confirmed {
+    background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    color: var(--color-success);
+}
+
+.dashboard-page .dash-status.pending {
+    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+    color: var(--color-warning);
+}
+
+.dashboard-page .dash-status.cancelled {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+}
+
+/* ===================== Lịch ===================== */
+.dashboard-page .calendar-nav {
+    display: flex;
+    flex: none;
+    gap: 4px;
+}
+
+.dashboard-page .calendar-nav button {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        border-color 150ms ease;
+}
+
+.dashboard-page .calendar-nav button:hover {
+    border-color: var(--color-primary-100);
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+}
+
+.dashboard-page .calendar-title {
+    margin: 0 0 8px;
+    color: var(--color-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.dashboard-page .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    text-align: center;
+}
+
+.dashboard-page .calendar-weekday {
+    padding: 4px 0;
+    color: #94a3b8;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.dashboard-page .calendar-day {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    border-radius: 8px;
+    color: #334155;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+.dashboard-page .calendar-day.muted {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.dashboard-page .calendar-day.in-range {
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+}
+
+.dashboard-page .calendar-day.today {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.dashboard-page .calendar-day.has-departure::after {
+    position: absolute;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-warning);
+    content: "";
+}
+
+.dashboard-page .calendar-day.today.has-departure::after {
+    background: #fde68a;
+}
+
+.dashboard-page .calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 9px;
+    color: var(--color-muted);
+    font-size: 9px;
+}
+
+.dashboard-page .calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dashboard-page .legend-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.dashboard-page .legend-dot.primary {
+    background: var(--color-primary);
+}
+
+.dashboard-page .legend-dot.warning {
+    background: var(--color-warning);
+}
+
+.dashboard-page .legend-block {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--color-primary-100);
+    border-radius: 3px;
+    background: var(--color-primary-50);
+}
+
+/* ===================== Chuyến sắp khởi hành ===================== */
+.dashboard-page .upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-page .upcoming-list li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+}
+
+.dashboard-page .upcoming-list li.is-highlight {
+    border-color: var(--color-primary-100);
+    background: linear-gradient(135deg, var(--color-primary-50), #fff);
+}
+
+.dashboard-page .upcoming-list > li > img {
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.dashboard-page .upcoming-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dashboard-page .upcoming-info span {
+    color: var(--color-primary);
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.dashboard-page .upcoming-info strong {
+    overflow: hidden;
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-page .upcoming-info small {
+    color: var(--color-muted);
+    font-size: 9.5px;
+}
+
+.dashboard-page .upcoming-people {
+    flex: none;
+}
+
+.dashboard-page .avatar-stack {
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-page .avatar-stack img {
+    width: 22px;
+    height: 22px;
+    margin-left: -7px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dashboard-page .avatar-stack img:first-child {
+    margin-left: 0;
+}
+
+.dashboard-page .avatar-stack span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin-left: -7px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+    font-size: 8px;
+    font-weight: 700;
+}
+
+/* ===================== Hoạt động ===================== */
+.dashboard-page .activity-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-page .activity-list li {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    padding: 7px 0;
+}
+
+.dashboard-page .activity-list li:not(:last-child)::after {
+    position: absolute;
+    top: 38px;
+    bottom: -2px;
+    left: 14px;
+    width: 1px;
+    background: var(--color-border);
+    content: "";
+}
+
+.dashboard-page .activity-icon {
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    flex: none;
+    border-radius: 9px;
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+}
+
+.dashboard-page .activity-body {
+    min-width: 0;
+}
+
+.dashboard-page .activity-body p {
+    margin: 0;
+    color: #475569;
+    font-size: 10.5px;
+    line-height: 1.5;
+}
+
+.dashboard-page .activity-body small {
+    color: #94a3b8;
+    font-size: 9px;
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 1320px) {
+    .dashboard-page .main-grid {
+        grid-template-columns: minmax(0, 1.8fr) minmax(292px, 0.95fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .dashboard-page .main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-page .col-right {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .dashboard-page .activity-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1024px) {
+    .admin-shell .sidebar {
+        transform: translateX(-100%);
+        transition: transform 250ms ease;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+    }
+
+    .admin-shell .sidebar.is-open {
+        transform: none;
+    }
+
+    .admin-shell .main {
+        margin-left: 0;
+    }
+
+    .admin-shell .header-menu-btn {
+        display: grid;
+    }
+
+    .admin-shell .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 55;
+        display: block;
+        padding: 0;
+        border: none;
+        background: rgba(15, 23, 42, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 200ms ease,
+            visibility 200ms ease;
+        cursor: pointer;
+    }
+
+    .admin-shell .sidebar-overlay.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@media (max-width: 980px) {
+    .dashboard-page .row-2,
+    .dashboard-page .row-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-page .messages-card {
+        height: auto;
+    }
+
+    /* Card top điểm đến trải full chiều rộng: donut bên trái, danh sách bên phải. */
+    .dashboard-page .destinations-card {
+        display: grid;
+        grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+        align-items: center;
+        column-gap: 24px;
+    }
+
+    .dashboard-page .destinations-card .card-head {
+        grid-column: 1 / -1;
+    }
+
+    .dashboard-page .destinations-card .donut-wrap {
+        grid-column: 1;
+        margin-top: 0;
+    }
+
+    .dashboard-page .destinations-card .destination-list {
+        grid-column: 2;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 860px) {
+    .dashboard-page .stats-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-page .col-right {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-page .activity-card {
+        grid-column: auto;
+    }
+
+    .admin-shell .header-search {
+        width: 220px;
+    }
+
+    .admin-shell .header-search kbd {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-shell .header-search {
+        display: none;
+    }
+
+    .admin-shell .header-subtitle {
+        display: none;
+    }
+
+    .admin-shell .admin-content {
+        padding: 18px 16px 26px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-page .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Bảng booking: ẩn cột thời gian để không phải cuộn ngang. */
+    .dashboard-page .dash-table {
+        min-width: 0;
+    }
+
+    .dashboard-page .dash-table .col-hide-sm {
+        display: none;
+    }
+
+    .admin-shell .header {
+        padding: 9px 14px;
+    }
+
+    .admin-shell .header-title h1 {
+        font-size: 16px;
+    }
+
+    .admin-shell .header-breadcrumb {
+        display: none;
+    }
+
+    .admin-shell .header-user-text {
+        display: none;
+    }
+
+    .admin-shell .header-user {
+        padding: 3px;
+    }
+
+    .dashboard-page .dash-card {
+        padding: 14px;
+    }
+
+    .dashboard-page .table-wrap {
+        margin: 0 -14px;
+        padding: 0 14px;
+    }
+
+    .admin-shell .admin-footer {
+        flex-direction: column;
+        gap: 3px;
+        padding: 12px 16px 16px;
+    }
+}

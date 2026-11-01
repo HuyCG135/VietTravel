@@ -1,25 +1,12 @@
-import Header from "../components/Header";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminAccessGate from "../features/admin/dashboard/guards";
+import DashboardLayout from "../features/admin/dashboard/DashboardLayout";
 
+// Vỏ khu vực quản trị: kiểm tra quyền rồi render Sidebar + Header + nội dung.
+// Nội dung các trang nghiệp vụ vẫn giữ nguyên.
 export default function AdminLayout({ children }) {
     return (
-        <>
-            <Header />
-            <div className="max-w-full mx-auto px-4 lg:px-8 pt-4 lg:pt-8 pb-4 lg:pb-8">
-                <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4 lg:gap-6 items-start">
-                    <div id="admin-sidebar-col">
-                        <AdminSidebar />
-                    </div>
-
-                    <div id="admin-main-col" className="min-w-0">
-                        <div className="bg-white rounded-2xl shadow-[0_8px_28px_rgba(30,41,59,0.08)] min-h-[420px]">
-                            <div className="p-6">
-                                {children}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+        <AdminAccessGate>
+            <DashboardLayout>{children}</DashboardLayout>
+        </AdminAccessGate>
     );
 }
