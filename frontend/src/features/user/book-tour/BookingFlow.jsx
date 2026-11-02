@@ -19,6 +19,7 @@ export default function BookingFlow({ user, tour }) {
     const departures = tour.departures || [];
     const contactPrefill = useMemo(() => getContactPrefill(user), [user]);
     const canBook = user?.role === "customer";
+    const [paymentType, setPaymentType] = useState("full");
     const [success, setSuccess] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
@@ -28,12 +29,12 @@ export default function BookingFlow({ user, tour }) {
         if (success) successTitleRef.current?.focus();
     }, [success]);
 
-    const goPay = async (bookingId) => {
+    const goPay = async (bookingId, typeToPay = paymentType) => {
         if (submitting) return;
         setSubmitting(true);
         setSubmitError("");
         try {
-            const pay = await createPaymentUrl(bookingId);
+            const pay = await createPaymentUrl(bookingId, typeToPay);
             if (!pay?.success || !pay?.vnpayUrl) {
                 throw new Error(pay?.message || "Không tạo được liên kết thanh toán");
             }
@@ -63,6 +64,9 @@ export default function BookingFlow({ user, tour }) {
                     payload.adults,
                     payload.children,
                 ),
+                deposit_amount: created.data?.deposit_amount || Math.round((total * 30) / 100),
+                remaining_amount: created.data?.remaining_amount || (total - Math.round((total * 30) / 100)),
+                payment_type: paymentType,
                 contact_name: payload.contact_name,
                 bookingId,
             });
@@ -93,6 +97,24 @@ export default function BookingFlow({ user, tour }) {
         fieldError,
     } = form;
 
+    const depositAllowed = useMemo(() => {
+        if (!departure?.departure_date) return false;
+        const depTime = new Date(departure.departure_date + "T00:00:00").getTime();
+        const nowTime = new Date().setHours(0, 0, 0, 0);
+        const days = Math.round((depTime - nowTime) / (24 * 60 * 60 * 1000));
+        return days >= 10;
+    }, [departure]);
+
+    const depositAmount = useMemo(() => Math.round((total * 30) / 100), [total]);
+    const remainingAmount = useMemo(() => total - depositAmount, [total, depositAmount]);
+
+    // Nếu không cho phép cọc (sát ngày), tự reset về thanh toán full
+    useEffect(() => {
+        if (!depositAllowed && paymentType === "deposit") {
+            setPaymentType("full");
+        }
+    }, [depositAllowed, paymentType]);
+
     const { contact, departureId, adults, children, passengers } = state;
     const showForm = !canBook || (canBook && !success && departures.length > 0);
 
@@ -119,7 +141,19 @@ export default function BookingFlow({ user, tour }) {
                         <p className="mt-1 text-muted">
                             Bước tiếp theo: hoàn tất thanh toán để xác nhận chỗ của {success.contact_name}.
                         </p>
-                        <p className="mt-4 text-2xl font-extrabold text-primary">{formatVnd(success.total)}</p>
+                        <div className="mt-4 p-4 rounded-2xl bg-primary/5 inline-block text-center min-w-[280px]">
+                            <span className="text-xs font-semibold text-muted uppercase tracking-wider block">
+                                {success.payment_type === "deposit" ? "Số tiền cọc cần thanh toán (30%)" : "Tổng tiền thanh toán (100%)"}
+                            </span>
+                            <p className="mt-1 text-2xl font-black text-rose-600">
+                                {formatVnd(success.payment_type === "deposit" ? success.deposit_amount : success.total)}
+                            </p>
+                            {success.payment_type === "deposit" && (
+                                <p className="text-xs text-muted mt-1">
+                                    Còn lại <b>{formatVnd(success.remaining_amount)}</b> thanh toán trước khi khởi hành 3 ngày
+                                </p>
+                            )}
+                        </div>
 
                         {submitError && (
                             <div
@@ -137,7 +171,7 @@ export default function BookingFlow({ user, tour }) {
                         <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
                             <button
                                 type="button"
-                                onClick={() => goPay(success.bookingId)}
+                                onClick={() => goPay(success.bookingId, success.payment_type)}
                                 disabled={submitting}
                                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-bold text-white transition-colors duration-150 hover:bg-primary-dark cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                             >
@@ -148,7 +182,7 @@ export default function BookingFlow({ user, tour }) {
                                     </>
                                 ) : (
                                     <>
-                                        Thanh toán ngay
+                                        {success.payment_type === "deposit" ? "Thanh toán cọc ngay" : "Thanh toán ngay"}
                                         <i className="fa-solid fa-arrow-right text-sm" />
                                     </>
                                 )}
@@ -254,6 +288,11 @@ export default function BookingFlow({ user, tour }) {
                                 unitPrices={unitPrices}
                                 canBook={canBook}
                                 submitting={submitting}
+                                paymentType={paymentType}
+                                setPaymentType={setPaymentType}
+                                depositAllowed={depositAllowed}
+                                depositAmount={depositAmount}
+                                remainingAmount={remainingAmount}
                             />
                         </div>
 
@@ -261,11 +300,13 @@ export default function BookingFlow({ user, tour }) {
                             <div className="flex items-center justify-between gap-4">
                                 <div className="min-w-0">
                                     <p className="text-xs text-muted truncate">
-                                        Tổng tiền
+                                        {paymentType === "deposit" ? "Tiền cọc (30%)" : "Tổng tiền"}
                                         {departure &&
                                             ` · Khởi hành ${new Date(departure.departure_date + "T00:00:00").toLocaleDateString("vi-VN")}`}
                                     </p>
-                                    <p className="text-lg font-extrabold text-primary truncate">{formatVnd(total)}</p>
+                                    <p className="text-lg font-extrabold text-primary truncate">
+                                        {formatVnd(paymentType === "deposit" ? depositAmount : total)}
+                                    </p>
                                 </div>
                                 <button
                                     type="submit"

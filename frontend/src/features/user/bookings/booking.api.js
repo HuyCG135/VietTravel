@@ -15,11 +15,11 @@ export async function createBooking(data) {
     return res.json();
 }
 
-export async function createPaymentUrl(bookingId) {
+export async function createPaymentUrl(bookingId, type = null) {
     const res = await fetch(`${API_URL}/bookings/create-payment-url`, {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ booking_id: bookingId }),
+        body: JSON.stringify({ booking_id: bookingId, ...(type ? { type } : {}) }),
     });
     return res.json();
 }

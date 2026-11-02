@@ -206,8 +206,12 @@ export default function PaymentPage() {
                         </dl>
 
                         <div className="mt-6 flex items-center justify-between rounded-2xl bg-primary/5 px-5 py-4">
-                            <span className="font-semibold text-foreground">Tổng tiền</span>
-                            <span className="text-xl font-extrabold text-primary">{fmtVND(data.total_price)}</span>
+                            <span className="font-semibold text-foreground">
+                                {data.payment_status === "deposit_paid" ? "Số tiền còn lại cần thanh toán (70%)" : "Tổng tiền thanh toán"}
+                            </span>
+                            <span className="text-xl font-extrabold text-primary">
+                                {fmtVND(data.payment_status === "deposit_paid" ? data.remaining_amount : data.total_price)}
+                            </span>
                         </div>
 
                         <div className="mt-6 flex flex-col items-center gap-3">

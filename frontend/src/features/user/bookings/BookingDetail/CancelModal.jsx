@@ -23,7 +23,14 @@ export default function CancelModal({ booking, open, cancelling, onClose, onConf
                 </p>
                 <div className="rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm px-4 py-3 mb-5">
                     <i className="fa-solid fa-circle-info mr-1.5" />
-                    Booking sẽ chuyển sang trạng thái <b>Đã hủy</b>, số ghế đã đặt sẽ được trả lại.
+                    {b.payment_status === "deposit_paid" ? (
+                        <span>
+                            <b>Lưu ý quan trọng:</b> Bạn đã đặt cọc cho booking này. Theo chính sách hoàn hủy,
+                            <b> số tiền cọc sẽ không được hoàn lại</b> khi bạn chủ động hủy đơn.
+                        </span>
+                    ) : (
+                        <span>Booking sẽ chuyển sang trạng thái <b>Đã hủy</b>, số ghế đã đặt sẽ được trả lại.</span>
+                    )}
                 </div>
                 <div className="flex justify-end gap-2">
                     <button

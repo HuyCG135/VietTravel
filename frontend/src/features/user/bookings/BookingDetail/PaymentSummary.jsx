@@ -34,6 +34,31 @@ export default function PaymentSummary({ booking, priceRows }) {
                         {formatVnd(b.total_price)}
                     </span>
                 </div>
+
+                {b.payment_status === "deposit_paid" && (
+                    <div className="mt-4 p-4 rounded-xl bg-sky-50/70 border border-sky-100 space-y-2 text-sm">
+                        <div className="flex items-center justify-between text-sky-900">
+                            <span className="font-medium">Tiền cọc đã thanh toán (30%)</span>
+                            <span className="font-bold tabular-nums">
+                                {formatVnd(b.paid_amount || b.deposit_amount)}
+                            </span>
+                        </div>
+                        <div className="flex items-center justify-between text-rose-700">
+                            <span className="font-medium">Số tiền còn lại cần thanh toán (70%)</span>
+                            <span className="font-extrabold tabular-nums">
+                                {formatVnd(Math.max(0, Number(b.total_price || 0) - Number(b.paid_amount || 0)))}
+                            </span>
+                        </div>
+                        {b.balance_due_at && (
+                            <div className="pt-2 border-t border-sky-200/60 flex items-center justify-between text-xs text-amber-800">
+                                <span>Hạn chót thanh toán nốt:</span>
+                                <span className="font-bold">
+                                    {new Date(b.balance_due_at).toLocaleDateString("vi-VN")}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </SectionCard>
 
             <SectionCard icon="fa-solid fa-note-sticky" title="Ghi chú">

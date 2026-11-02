@@ -24,7 +24,11 @@ export default function BookingHeader({ booking, isCompleted, onOpenInvoice, onO
                         type="button"
                         onClick={onOpenPay}
                         disabled={paying}
-                        className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary-dark px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                        className={`inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+                            b.payment_status === "deposit_paid"
+                                ? "bg-amber-600 hover:bg-amber-700"
+                                : "bg-primary hover:bg-primary-dark"
+                        }`}
                     >
                         {paying ? (
                             <>
@@ -34,7 +38,7 @@ export default function BookingHeader({ booking, isCompleted, onOpenInvoice, onO
                         ) : (
                             <>
                                 <i className="fa-solid fa-credit-card" />
-                                Thanh toán ngay
+                                {b.payment_status === "deposit_paid" ? "Thanh toán nốt" : "Thanh toán ngay"}
                             </>
                         )}
                     </button>
@@ -47,7 +51,7 @@ export default function BookingHeader({ booking, isCompleted, onOpenInvoice, onO
                     <i className="fa-solid fa-print" />
                     In hóa đơn
                 </button>
-                {b.status === "pending" && (
+                {(b.status === "pending" || b.payment_status === "deposit_paid") && b.status !== "cancelled" && (
                     <button
                         type="button"
                         onClick={onOpenCancel}

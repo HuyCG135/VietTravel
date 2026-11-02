@@ -10,6 +10,11 @@ export default function BookingSummaryCard({
     unitPrices,
     canBook,
     submitting,
+    paymentType = "full",
+    setPaymentType,
+    depositAllowed = false,
+    depositAmount = 0,
+    remainingAmount = 0,
 }) {
     const formattedId = `#TOUR${String(tour.id).padStart(3, "0")}`;
 
@@ -62,6 +67,82 @@ export default function BookingSummaryCard({
                     <span className="text-lg font-extrabold text-foreground">TỔNG TIỀN</span>
                     <span className="text-2xl font-extrabold text-primary">{formatVnd(total)}</span>
                 </div>
+
+                {/* Chọn hình thức thanh toán */}
+                {setPaymentType && (
+                    <div className="mt-5 pt-4 border-t border-slate-100">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2.5">
+                            Hình thức thanh toán
+                        </label>
+                        <div className="space-y-2">
+                            <label
+                                className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                    paymentType === "full"
+                                        ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
+                                        : "border-slate-200 hover:border-slate-300 bg-background text-muted"
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="paymentType"
+                                    value="full"
+                                    checked={paymentType === "full"}
+                                    onChange={() => setPaymentType("full")}
+                                    className="mt-1 text-primary focus:ring-primary cursor-pointer"
+                                />
+                                <div className="text-sm min-w-0 flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-bold text-foreground">Thanh toán toàn bộ (100%)</span>
+                                        <span className="font-extrabold text-primary">{formatVnd(total)}</span>
+                                    </div>
+                                    <p className="text-xs text-muted mt-0.5">Xác nhận ngay chỗ ngồi cho chuyến đi</p>
+                                </div>
+                            </label>
+
+                            <label
+                                className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                                    depositAllowed
+                                        ? paymentType === "deposit"
+                                            ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30 cursor-pointer"
+                                            : "border-slate-200 hover:border-slate-300 bg-background text-muted cursor-pointer"
+                                        : "opacity-60 bg-slate-50 border-slate-200 cursor-not-allowed"
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="paymentType"
+                                    value="deposit"
+                                    disabled={!depositAllowed}
+                                    checked={paymentType === "deposit"}
+                                    onChange={() => depositAllowed && setPaymentType("deposit")}
+                                    className="mt-1 text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed"
+                                />
+                                <div className="text-sm min-w-0 flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-bold text-foreground">Đặt cọc trước (30%)</span>
+                                        <span className="font-extrabold text-primary">{formatVnd(depositAmount)}</span>
+                                    </div>
+                                    {depositAllowed ? (
+                                        <p className="text-xs text-muted mt-0.5">
+                                            Còn lại <b>{formatVnd(remainingAmount)}</b> thanh toán trước khi khởi hành 3 ngày
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-amber-600 mt-0.5">
+                                            Chỉ áp dụng cọc khi ngày khởi hành còn cách trên 10 ngày
+                                        </p>
+                                    )}
+                                </div>
+                            </label>
+                        </div>
+
+                        <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-sm">
+                            <span className="text-muted font-medium">Số tiền thanh toán đợt này:</span>
+                            <span className="text-lg font-black text-rose-600">
+                                {formatVnd(paymentType === "deposit" ? depositAmount : total)}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <button

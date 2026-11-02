@@ -36,10 +36,15 @@ export default function BookingCard({ booking: b }) {
         b.status === "confirmed" && b.payment_status === "paid" && String(b.departure_date).slice(0, 10) < todayStr;
     const statusTag = isCompleted ? COMPLETED_STATUS : status;
 
-    const handlePay = async (id) => {
+    const isDeposit = b.payment_status === "deposit_paid";
+    const remainingAmount = Math.max(0, Number(b.total_price || 0) - Number(b.paid_amount || 0));
+
+    const handlePay = async (id, type = null) => {
         setPayingId(id);
         try {
-            const res = await createPaymentUrl(id);
+            // Nếu là đơn đã cọc thì tự động truyền type = 'balance'
+            const paymentType = type || (isDeposit ? "balance" : "full");
+            const res = await createPaymentUrl(id, paymentType);
             if (res.success && res.vnpayUrl) {
                 window.location.href = res.vnpayUrl;
                 return;
@@ -122,33 +127,53 @@ export default function BookingCard({ booking: b }) {
                         </span>
 
                         <div className="text-center sm:text-right">
-                            <span className="text-[11px] text-muted block font-medium">Tổng tiền</span>
+                            <span className="text-[11px] text-muted block font-medium">
+                                {isDeposit ? "Tổng tiền tour" : "Tổng tiền"}
+                            </span>
                             <span className="text-xl sm:text-2xl font-extrabold text-rose-600 tabular-nums leading-tight">
                                 {formatVnd(b.total_price)}
                             </span>
                             <span className="text-xs text-muted block mt-0.5">{formatPax(b.adults, b.children)}</span>
+                            {isDeposit && (
+                                <div className="mt-1 text-[11px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
+                                    Đã cọc: <b>{formatVnd(b.paid_amount || b.deposit_amount)}</b>
+                                    <br />
+                                    Còn lại: <b>{formatVnd(remainingAmount)}</b>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {b.payment_status !== "paid" && b.status !== "cancelled" && (
-                        <button
-                            type="button"
-                            onClick={() => handlePay(b.id)}
-                            disabled={payingId === b.id}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition-colors duration-150 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 cursor-pointer"
-                        >
-                            {payingId === b.id ? (
-                                <>
-                                    <span className="w-4 h-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                                    Đang tạo...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fa-solid fa-credit-card" />
-                                    Thanh toán ngay
-                                </>
+                        <div className="flex flex-col items-end gap-1.5 w-full sm:w-auto">
+                            <button
+                                type="button"
+                                onClick={() => handlePay(b.id)}
+                                disabled={payingId === b.id}
+                                className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 cursor-pointer w-full sm:w-auto ${
+                                    isDeposit
+                                        ? "bg-amber-600 hover:bg-amber-700 focus-visible:ring-amber-500/40"
+                                        : "bg-primary hover:bg-primary-dark focus-visible:ring-primary/40"
+                                }`}
+                            >
+                                {payingId === b.id ? (
+                                    <>
+                                        <span className="w-4 h-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                        Đang tạo...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fa-solid fa-credit-card" />
+                                        {isDeposit ? `Thanh toán nốt (${formatVnd(remainingAmount)})` : "Thanh toán ngay"}
+                                    </>
+                                )}
+                            </button>
+                            {isDeposit && b.balance_due_at && (
+                                <span className="text-[10px] text-amber-700 font-medium">
+                                    Hạn trả nốt: {new Date(b.balance_due_at).toLocaleDateString("vi-VN")}
+                                </span>
                             )}
-                        </button>
+                        </div>
                     )}
                 </div>
             </article>
