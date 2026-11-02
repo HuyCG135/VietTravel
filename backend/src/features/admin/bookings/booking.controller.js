@@ -5,6 +5,8 @@ import {
     getTripsOverviewService,
     listBookingsService,
     updateBookingStatusService,
+    refundBookingService,
+    rejectCancelBookingService,
 } from "./booking.service.js";
 import { calculateRefund } from "./refund.service.js";
 
@@ -186,6 +188,22 @@ export const refundBooking = async (req, res) => {
         res.json({
             success: true,
             message: "Đã ghi nhận hoàn tiền",
+            data,
+        });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+// POST /api/admin/bookings/:id/reject-cancel — Admin từ chối yêu cầu hủy
+export const rejectCancelBooking = async (req, res) => {
+    try {
+        const bookingId = Number(req.params.id);
+        const data = await rejectCancelBookingService(bookingId);
+
+        res.json({
+            success: true,
+            message: "Đã từ chối yêu cầu hủy booking",
             data,
         });
     } catch (error) {

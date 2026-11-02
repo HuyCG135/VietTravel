@@ -1,5 +1,5 @@
 import express from "express";
-import { createBooking, getMyBookings, getBookingDetail, cancelBooking, getAllBookings, updateStatus, deleteBooking } from "./booking.controller.js";
+import { createBooking, getMyBookings, getBookingDetail, cancelBooking, getBookingRefundInfo, getAllBookings, updateStatus, deleteBooking } from "./booking.controller.js";
 import { createVNPayUrl, vnpayReturn, getPaymentSummary, payLater } from "./booking.payment.controller.js";
 import { verifyToken, isAdmin, isBookingStaff, isUser } from "../../middlewares/auth.js";
 import { validateBooking, validateIdParam, validateStatusUpdate } from "./booking.validate.js";
@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post("/", verifyToken, isUser, validateBooking, createBooking);
 router.get("/my-bookings", verifyToken, isUser, getMyBookings);
+router.get("/:id/refund-info", verifyToken, isUser, validateIdParam, getBookingRefundInfo);
 router.put("/:id/cancel", verifyToken, isUser, validateIdParam, cancelBooking);
 
 router.get("/", verifyToken, isBookingStaff, getAllBookings);

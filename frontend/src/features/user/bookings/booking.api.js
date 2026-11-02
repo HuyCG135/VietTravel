@@ -38,6 +38,13 @@ export async function getBookingDetail(id) {
     return res.json();
 }
 
+export async function getBookingRefundInfo(id) {
+    const res = await fetch(`${API_URL}/bookings/${id}/refund-info`, {
+        headers: authHeaders(),
+    });
+    return res.json();
+}
+
 export async function cancelBooking(id) {
     const res = await fetch(`${API_URL}/bookings/${id}/cancel`, {
         method: "PUT",
@@ -49,7 +56,6 @@ export async function cancelBooking(id) {
 export async function getPaymentSummary(bookingId, token) {
     const res = await fetch(`${API_URL}/bookings/payment-summary/${bookingId}?token=${encodeURIComponent(token)}`);
     const data = await res.json().catch(() => ({ success: false, message: "Phản hồi không hợp lệ" }));
-    // Kèm statusCode để trang thanh toán phân biệt lỗi (401 token hết hạn / 400 đơn lỗi...)
     return { ...data, statusCode: res.status };
 }
 

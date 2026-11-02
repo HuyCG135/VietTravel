@@ -2,6 +2,7 @@ export const BOOKING_STATUS = {
     pending: { label: "Đang chờ xác nhận", icon: "fa-solid fa-clock", cls: "bg-amber-500/10 text-amber-800" },
     confirmed: { label: "Đã xác nhận", icon: "fa-solid fa-circle-check", cls: "bg-emerald-500/10 text-emerald-800" },
     cancelled: { label: "Đã hủy", icon: "fa-solid fa-circle-xmark", cls: "bg-red-500/10 text-red-700" },
+    cancel_requested: { label: "Yêu cầu hủy", icon: "fa-solid fa-clock-rotate-left", cls: "bg-rose-500/10 text-rose-700" },
 };
 
 export const BOOKING_PAYMENT = {

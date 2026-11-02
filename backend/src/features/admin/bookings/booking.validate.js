@@ -1,4 +1,4 @@
-const VALID_STATUSES = ["pending", "confirmed", "cancelled"];
+const VALID_STATUSES = ["pending", "confirmed", "cancelled", "cancel_requested"];
 const VALID_RANGES = ["7d", "30d", "3m", "12m"];
 
 const respondInvalid = (res, errors) =>

@@ -69,7 +69,7 @@ export async function getBookingDetail(id) {
     return parseJson(res);
 }
 
-// Đổi trạng thái booking (pending | confirmed | cancelled).
+// Đổi trạng thái booking (pending | confirmed | cancelled | cancel_requested).
 export async function updateBookingStatus(id, status) {
     const res = await fetch(
         `${ADMIN_BOOKINGS_URL}/${encodeURIComponent(id)}/status`,
@@ -79,5 +79,32 @@ export async function updateBookingStatus(id, status) {
             body: JSON.stringify({ status }),
         },
     );
+    return parseJson(res);
+}
+
+// Lấy thông tin tính toán hoàn tiền cho admin
+export async function getAdminRefundInfo(id) {
+    const res = await fetch(`${ADMIN_BOOKINGS_URL}/${encodeURIComponent(id)}/refund-info`, {
+        headers: authHeaders(),
+    });
+    return parseJson(res);
+}
+
+// Phê duyệt hoàn tiền (ghi nhận thủ công)
+export async function approveRefund(id, data = {}) {
+    const res = await fetch(`${ADMIN_BOOKINGS_URL}/${encodeURIComponent(id)}/refund`, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(data),
+    });
+    return parseJson(res);
+}
+
+// Từ chối yêu cầu hủy (giữ lại booking ở trạng thái confirmed)
+export async function rejectCancelRequest(id) {
+    const res = await fetch(`${ADMIN_BOOKINGS_URL}/${encodeURIComponent(id)}/reject-cancel`, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+    });
     return parseJson(res);
 }

@@ -4,6 +4,7 @@ import {
     getBookingDetailService,
     getAllBookingsService,
     cancelBookingService,
+    getBookingRefundInfoService,
     updateStatusService,
     deleteBookingService,
 } from "./booking.service.js";
@@ -65,13 +66,27 @@ export const getBookingDetail = async (req, res) => {
     }
 };
 
-export const cancelBooking = async (req, res) => {
+export const getBookingRefundInfo = async (req, res) => {
     try {
-        await cancelBookingService(req.user.id, req.user.role, req.params.id);
+        const data = await getBookingRefundInfoService(req.user.id, req.user.role, req.params.id);
 
         res.json({
             success: true,
-            message: "Hủy booking thành công",
+            data,
+        });
+    } catch (error) {
+        handleError(res, error, "Lỗi khi lấy thông tin hoàn tiền");
+    }
+};
+
+export const cancelBooking = async (req, res) => {
+    try {
+        const result = await cancelBookingService(req.user.id, req.user.role, req.params.id);
+
+        res.json({
+            success: true,
+            message: result.message || "Yêu cầu hủy booking thành công",
+            data: result.refundInfo,
         });
     } catch (error) {
         handleError(res, error, "Lỗi khi hủy booking");

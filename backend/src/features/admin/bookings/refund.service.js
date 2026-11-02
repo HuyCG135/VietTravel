@@ -13,17 +13,45 @@ const PERCENT_MAP = [
     { minDays: 0, penaltyPct: 100, label: "Dưới 7 ngày trước khởi hành" },
 ];
 
-export const calculateRefund = (departureDateStr, paidAmount) => {
-    const now = new Date();
-    const dep = new Date(departureDateStr + "T00:00:00");
-    const daysDiff = Math.ceil((dep.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+/**
+ * Chuẩn hóa ngày khởi hành về Date object (00:00:00 giờ địa phương)
+ * departureInput có thể là Date object, ISO string ('2026-11-20T00:00:00.000Z'), hoặc date string ('2026-11-20')
+ */
+const parseDepartureDate = (departureInput) => {
+    if (!departureInput) return null;
+    if (departureInput instanceof Date) {
+        const d = new Date(departureInput);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+    const str = String(departureInput).trim();
+    // Lấy YYYY-MM-DD
+    const ymd = str.slice(0, 10);
+    const [year, month, day] = ymd.split("-").map(Number);
+    if (!year || !month || !day) return null;
+    return new Date(year, month - 1, day, 0, 0, 0, 0);
+};
 
-    const rule = PERCENT_MAP.find((r) => daysDiff >= r.minDays) || PERCENT_MAP[PERCENT_MAP.length - 1];
+export const calculateRefund = (departureDateInput, paidAmount) => {
+    const now = new Date();
+    // Đưa now về 00:00:00 để tính số ngày trọn vẹn
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
+    const dep = parseDepartureDate(departureDateInput);
+    let daysDiff = 0;
+    if (dep && !isNaN(dep.getTime())) {
+        daysDiff = Math.round((dep.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    // Không để daysDiff âm nếu tour đã qua ngày
+    const effectiveDays = Math.max(0, daysDiff);
+
+    const rule = PERCENT_MAP.find((r) => effectiveDays >= r.minDays) || PERCENT_MAP[PERCENT_MAP.length - 1];
     const penaltyPct = rule.penaltyPct;
     const refundAmount = Math.round((Number(paidAmount || 0) * (100 - penaltyPct)) / 100);
 
     return {
-        daysDiff,
+        daysDiff: effectiveDays,
         ruleLabel: rule.label,
         penaltyPct,
         refundAmount,

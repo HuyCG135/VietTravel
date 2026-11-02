@@ -12,6 +12,7 @@ const STATUS_LABEL = {
     pending: "Chờ xử lý",
     confirmed: "Đã xác nhận",
     cancelled: "Đã hủy",
+    cancel_requested: "Yêu cầu hủy",
 };
 
 // Cấu hình range cho TripsOverview + TopPackages.
@@ -365,35 +366,56 @@ export const updateBookingStatusService = async (id, status) => {
     });
 };
 
-// Ghi nhận hoàn tiền: set payment_status=refunded + refunded_at,
-// lưu các trường bên phụ, đồng tác tài khoản đã duyệt.
-// (không tự đổi ghế tại đây — caller quyết định đã trừ ghế hay chưa).
+// Phê duyệt hoàn tiền: set payment_status='refunded', status='cancelled', nhả lại ghế
 export const refundBookingService = async (id, payload) => {
-    const { refundAmount, refundMethod, providerRef, note } = payload || {};
+    const { refundAmount } = payload || {};
+    
+    return db.transaction(async (trx) => {
+        const booking = await AdminBooking.findRawById(id, trx, true);
+        if (!booking) {
+            throw createHttpError(404, "Không tìm thấy booking");
+        }
+
+        // Nhả ghế nếu booking chưa ở trạng thái cancelled
+        if (booking.status !== "cancelled") {
+            const pax = Number(booking.adults) + Number(booking.children);
+            await AdminBooking.adjustSeats(booking.departure_id, pax, trx);
+        }
+
+        await trx("bookings")
+            .where("id", id)
+            .update({
+                payment_status: "refunded",
+                status: "cancelled",
+                updated_at: db.raw("NOW()"),
+            });
+
+        return {
+            id: booking.id,
+            refundAmount: refundAmount || 0,
+            status: "cancelled",
+            payment_status: "refunded",
+            updatedAt: new Date(),
+        };
+    });
+};
+
+// Từ chối yêu cầu hủy: trả trạng thái về confirmed
+export const rejectCancelBookingService = async (id) => {
     const booking = await AdminBooking.findDetailById(id);
     if (!booking) {
-        throw new Error("Không tìm thấy booking");
+        throw createHttpError(404, "Không tìm thấy booking");
     }
 
-    const now = new Date();
-    const updated = await AdminBooking.refund(
-        id,
-        refundAmount || 0,
-        refundMethod || "chuyen_khoan",
-        providerRef || null,
-        note || null,
-    );
+    if (booking.status !== "cancel_requested") {
+        throw createHttpError(400, "Booking không ở trạng thái yêu cầu hủy");
+    }
 
-    // Cập nhật cache / log đơn giản ở đây
+    await AdminBooking.updateStatus(id, "confirmed");
+
     return {
         id: booking.id,
-        refundAmount: booking.refund_amount || refundAmount || 0,
-        refundMethod: booking.refund_method || refundMethod || "chuyen_khoan",
-        providerRef: booking.refund_provider_ref || providerRef || null,
-        refundedAt: booking.refunded_at || now,
-        note: booking.refund_note || note || null,
-        approvedBy: payload?.approvedBy || null,
-        status: booking.payment_status,
-        updatedAt: updated ? now : null,
+        status: "confirmed",
+        status_label: STATUS_LABEL["confirmed"],
     };
 };

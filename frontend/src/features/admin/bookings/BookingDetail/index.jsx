@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Printer } from "lucide-react";
-import { getBookingDetail } from "../bookings.api";
+import { getBookingDetail, approveRefund, rejectCancelRequest } from "../bookings.api";
 import BookingHeader from "./BookingHeader";
 import TourInfoSection from "./TourInfoSection";
 import CustomerSection from "./CustomerSection";
@@ -9,7 +9,9 @@ import PassengersSection from "./PassengersSection";
 import TotalPriceCard from "./TotalPriceCard";
 import ActivityHistory from "./ActivityHistory";
 import InvoiceModal from "./InvoiceModal";
+import AdminRefundModal from "./AdminRefundModal";
 import { buildPriceRows } from "./detailFormat";
+import { useToast } from "../../../../context/ToastContext";
 
 function DetailSkeleton() {
     return (
@@ -31,11 +33,14 @@ function DetailSkeleton() {
 }
 
 export default function AdminBookingDetail() {
+    const toast = useToast();
     const { id } = useParams();
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [invoiceOpen, setInvoiceOpen] = useState(false);
+    const [refundModalOpen, setRefundModalOpen] = useState(false);
+    const [processingRefund, setProcessingRefund] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
@@ -67,13 +72,52 @@ export default function AdminBookingDetail() {
 
     // Đóng modal hóa đơn bằng phím Escape.
     useEffect(() => {
-        if (!invoiceOpen) return undefined;
+        if (!invoiceOpen && !refundModalOpen) return undefined;
         const onKey = (event) => {
-            if (event.key === "Escape") setInvoiceOpen(false);
+            if (event.key === "Escape") {
+                setInvoiceOpen(false);
+                setRefundModalOpen(false);
+            }
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [invoiceOpen]);
+    }, [invoiceOpen, refundModalOpen]);
+
+    const handleApproveRefund = async (amount) => {
+        setProcessingRefund(true);
+        try {
+            const res = await approveRefund(id, { refundAmount: amount });
+            if (res?.success) {
+                toast?.success ? toast.success("Đã phê duyệt hoàn tiền và hủy đơn thành công!") : alert("Đã phê duyệt hoàn tiền!");
+                setRefundModalOpen(false);
+                setReloadKey((k) => k + 1);
+            } else {
+                toast?.danger ? toast.danger(res?.message || "Không thể duyệt hoàn tiền") : alert(res?.message || "Lỗi duyệt hoàn tiền");
+            }
+        } catch (err) {
+            toast?.danger ? toast.danger(err?.message || "Lỗi kết nối server") : alert(err?.message || "Lỗi kết nối server");
+        } finally {
+            setProcessingRefund(false);
+        }
+    };
+
+    const handleRejectCancel = async () => {
+        setProcessingRefund(true);
+        try {
+            const res = await rejectCancelRequest(id);
+            if (res?.success) {
+                toast?.success ? toast.success("Đã từ chối yêu cầu hủy. Booking giữ nguyên trạng thái xác nhận.") : alert("Đã từ chối yêu cầu hủy");
+                setRefundModalOpen(false);
+                setReloadKey((k) => k + 1);
+            } else {
+                toast?.danger ? toast.danger(res?.message || "Không thể từ chối yêu cầu") : alert(res?.message || "Lỗi từ chối");
+            }
+        } catch (err) {
+            toast?.danger ? toast.danger(err?.message || "Lỗi kết nối server") : alert(err?.message || "Lỗi kết nối server");
+        } finally {
+            setProcessingRefund(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -109,6 +153,30 @@ export default function AdminBookingDetail() {
         <div className="space-y-5">
             <BookingHeader booking={booking} />
 
+            {/* Banner thông báo nếu khách đang yêu cầu hủy */}
+            {booking.status === "cancel_requested" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-300 bg-rose-50 p-4 sm:p-5 text-rose-900 shadow-xs">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-200 text-rose-700">
+                            <i className="fa-solid fa-triangle-exclamation text-lg" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-sm sm:text-base">Khách hàng yêu cầu hủy booking này</h4>
+                            <p className="text-xs sm:text-sm text-rose-700">
+                                Đơn đã thanh toán đầy đủ. Vui lòng xem chính sách hoàn tiền và phê duyệt hoặc từ chối.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setRefundModalOpen(true)}
+                        className="cursor-pointer rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-rose-700"
+                    >
+                        Xử lý yêu cầu hủy
+                    </button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <div className="space-y-5 lg:col-span-2">
                     <TourInfoSection booking={booking} />
@@ -117,7 +185,17 @@ export default function AdminBookingDetail() {
                 </div>
 
                 <div className="space-y-5">
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-2">
+                        {booking.status === "cancel_requested" && (
+                            <button
+                                type="button"
+                                onClick={() => setRefundModalOpen(true)}
+                                className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none"
+                            >
+                                <i className="fa-solid fa-file-invoice-dollar" />
+                                Xử lý hoàn tiền
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={() => setInvoiceOpen(true)}
@@ -139,6 +217,15 @@ export default function AdminBookingDetail() {
                 rows={rows}
                 total={total}
                 onClose={() => setInvoiceOpen(false)}
+            />
+
+            <AdminRefundModal
+                booking={booking}
+                open={refundModalOpen}
+                processing={processingRefund}
+                onClose={() => setRefundModalOpen(false)}
+                onApprove={handleApproveRefund}
+                onReject={handleRejectCancel}
             />
         </div>
     );

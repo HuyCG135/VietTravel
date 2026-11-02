@@ -11,18 +11,26 @@ const COLLECTED_META = {
         Icon: ReceiptText,
         note: (booking) => `Thanh toán qua: VNPay · ${formatDate(booking.updated_at)}`,
     },
-    unpaid: {
-        wrap: "bg-sky-100",
+    deposit_paid: {
+        wrap: "bg-sky-50",
         tone: "text-sky-700",
         sub: "text-sky-700/80",
+        label: "Đã cọc (30%)",
+        Icon: ReceiptText,
+        note: (booking) => `Đã thu cọc: ${formatVnd(booking.deposit_amount || booking.paid_amount)}`,
+    },
+    unpaid: {
+        wrap: "bg-amber-50",
+        tone: "text-amber-700",
+        sub: "text-amber-700/80",
         label: "Chưa thu",
         Icon: ReceiptText,
         note: () => "Số tiền cần thanh toán",
     },
     refunded: {
-        wrap: "bg-sky-50",
-        tone: "text-sky-700",
-        sub: "text-sky-700/80",
+        wrap: "bg-purple-50",
+        tone: "text-purple-700",
+        sub: "text-purple-700/80",
         label: "Đã hoàn tiền",
         Icon: RotateCcw,
         note: (booking) => `Hoàn tiền ngày ${formatDate(booking.updated_at)}`,
@@ -75,7 +83,7 @@ export default function TotalPriceCard({ booking, rows = [], total = 0 }) {
                         </span>
                     </div>
                     <p className={`mt-2 text-lg font-extrabold tabular-nums ${meta.tone}`}>
-                        {formatVnd(total)}
+                        {formatVnd(booking.paid_amount || total)}
                     </p>
                     <p className={`mt-1 text-xs ${meta.sub}`}>{meta.note(booking)}</p>
                 </div>

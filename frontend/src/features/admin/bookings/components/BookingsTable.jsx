@@ -201,6 +201,7 @@ export default function BookingsTable() {
                         <option value="pending">Chờ xử lý</option>
                         <option value="confirmed">Đã xác nhận</option>
                         <option value="cancelled">Đã hủy</option>
+                        <option value="cancel_requested">Yêu cầu hủy</option>
                     </select>
                 </div>
             </div>

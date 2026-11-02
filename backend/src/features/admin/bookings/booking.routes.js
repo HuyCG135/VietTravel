@@ -8,6 +8,7 @@ import {
     updateBookingStatus,
     refundBooking,
     getRefundInfo,
+    rejectCancelBooking,
 } from "./booking.controller.js";
 import {
     validateIdParam,
@@ -44,5 +45,6 @@ router.put(
 // ============ HOÀN TIỀN ============
 router.get("/:id/refund-info", verifyToken, isAdmin, validateIdParam, getRefundInfo);
 router.post("/:id/refund", verifyToken, isAdmin, validateIdParam, refundBooking);
+router.post("/:id/reject-cancel", verifyToken, isAdmin, validateIdParam, rejectCancelBooking);
 
 export default router;

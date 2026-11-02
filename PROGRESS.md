@@ -675,6 +675,47 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Quy trình Hủy booking & Hoàn tiền (User yêu cầu & Admin phê duyệt)
+
+**Đã làm:**
+
+- [x] **Backend User Booking:** Sửa logic hủy đơn `cancelBookingService` trong `backend/src/features/booking/booking.service.js`. Chỉ hiển thị và cho phép gửi yêu cầu hủy khi `payment_status === 'paid'`. Khi gửi, đơn chuyển sang trạng thái `cancel_requested` và tự động tính số tiền hoàn dự kiến dựa trên mốc ngày khởi hành.
+- [x] **Backend Refund info API:** Thêm `GET /api/bookings/:id/refund-info` để frontend hiển thị trước cho khách thông tin phạt/hoàn tiền trước khi bấm xác nhận hủy.
+- [x] **Backend Admin Booking:** Cập nhật `refundBookingService` và `rejectCancelBookingService` trong `backend/src/features/admin/bookings/` để admin phê duyệt hoặc từ chối yêu cầu hủy. Khi phê duyệt: chuyển `status = 'cancelled'`, `payment_status = 'refunded'` và hoàn lại ghế cho tour trong transaction mà không thêm cột dữ liệu mới vào DB.
+- [x] **Frontend User:** Thêm Modal xác nhận hủy tour `CancelModal.jsx` kèm chi tiết chính sách hoàn tiền (≥15 ngày: phạt 10%, 10-14 ngày: phạt 50%, 7-9 ngày: phạt 70%, <7 ngày: phạt 100%). Cập nhật `BookingHeader.jsx` chỉ hiện nút hủy khi khách đã trả đủ (`paid`) và chưa gửi yêu cầu.
+- [x] **Frontend Admin:** Tạo modal `AdminRefundModal.jsx` cho ban quản trị xem bảng tính hoàn tiền, duyệt hoàn tiền (ghi nhận thủ công) hoặc từ chối yêu cầu hủy. Cập nhật thẻ trạng thái tổng tiền (`TotalPriceCard.jsx`) và bộ lọc danh sách booking (`BookingsTable.jsx`).
+- [x] **Chạy lint & build:** `npm run lint` pass 100%, `npm run build` pass 100%.
+
+**File liên quan:**
+
+- Thêm: `frontend/src/features/admin/bookings/BookingDetail/AdminRefundModal.jsx`
+- Sửa: 
+  - `backend/src/features/booking/booking.service.js`
+  - `backend/src/features/booking/booking.controller.js`
+  - `backend/src/features/booking/booking.routes.js`
+  - `backend/src/features/admin/bookings/booking.service.js`
+  - `backend/src/features/admin/bookings/booking.controller.js`
+  - `backend/src/features/admin/bookings/booking.routes.js`
+  - `backend/src/features/admin/bookings/booking.repository.js`
+  - `backend/src/features/admin/bookings/booking.validate.js`
+  - `frontend/src/features/user/bookings/booking.api.js`
+  - `frontend/src/features/user/bookings/bookingStatus.js`
+  - `frontend/src/features/user/bookings/BookingDetail/BookingHeader.jsx`
+  - `frontend/src/features/user/bookings/BookingDetail/CancelModal.jsx`
+  - `frontend/src/features/user/bookings/BookingDetail/index.jsx`
+  - `frontend/src/features/admin/bookings/bookings.api.js`
+  - `frontend/src/features/admin/bookings/BookingDetail/bookingMeta.js`
+  - `frontend/src/features/admin/bookings/BookingDetail/TotalPriceCard.jsx`
+  - `frontend/src/features/admin/bookings/BookingDetail/index.jsx`
+  - `frontend/src/features/admin/bookings/components/BookingsTable.jsx`
+
+**Kiểm tra:**
+
+- `npm run lint` (frontend) pass không còn lỗi.
+- `npm run build` (frontend) hoàn tất thành công (2715 modules).
+
+---
+
 ## 8. Mẫu ghi cho lần cập nhật sau
 
 ```md
