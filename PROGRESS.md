@@ -647,6 +647,34 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-02 — Biểu đồ Use Case module Đề xuất tour
+
+**Đã làm:**
+
+- [x] Dựng biểu đồ use case tổng quát cho module `tour_requests` (2 actor chính + 1 actor phụ, 11 use case, 2 gói nghiệp vụ Khách hàng / Admin).
+- [x] Dựng biểu đồ chi tiết nhóm Khách hàng: `UC-KH-01..06` + các use case include (`Sinh bản nháp AI`, `Kiểm tra dữ liệu đầu vào`, `Tìm tour tương tự`) và extend (`Chỉnh sửa bản nháp`).
+- [x] Dựng biểu đồ chi tiết nhóm Admin: `UC-AD-01..05` + include (`Xem chi tiết`, `Ghi nhận người duyệt`) và extend (`Duyệt`, `Từ chối`, `Đánh dấu đang xem xét`).
+- [x] Viết tài liệu `README.md`: bảng actor, bảng use case, giải thích lý do từng quan hệ include/extend, ánh xạ UC → API → bảng dữ liệu, sơ đồ trạng thái đề xuất.
+- [x] Ghi rõ 5 điểm **chưa triển khai** (không thông báo cho admin, duyệt xong không tạo tour, khách không hủy/sửa đề xuất, chưa chặn chuyển trạng thái ngược, chưa có log xử lý).
+- [x] Render sẵn PNG bằng PlantUML + Graphviz; thêm `.gitignore` cho `plantuml.jar` và `docs/uc/tools/` (binary nặng).
+
+**File liên quan:**
+
+- Thêm: `docs/uc/tong-quat.puml`, `docs/uc/chi-tiet-khach-hang.puml`, `docs/uc/chi-tiet-admin.puml`, `docs/uc/README.md`, `docs/uc/images/UC_TongQuat_DeXuatTour.png`, `docs/uc/images/UC_ChiTiet_KhachHang.png`, `docs/uc/images/UC_ChiTiet_Admin.png`.
+- Sửa: `.gitignore`, `PROGRESS.md`.
+
+**Kiểm tra:**
+
+- Render lại bằng `java -jar docs/uc/plantuml.jar -tpng -charset UTF-8 -o images docs/uc/*.puml` (cần `GRAPHVIZ_DOT` trỏ tới `docs/uc/tools/Graphviz-12.0.0-win64/bin/dot.exe`) → 3 file PNG tạo thành công, tiếng Việt hiển thị đúng dấu.
+- Đối chiếu từng use case với endpoint thật trong `backend/src/features/tour-request/tourRequest.routes.js` và `backend/src/features/admin/tour-requests/tourRequest.routes.js`.
+
+**Ghi chú / việc còn lại:**
+
+- Sơ đồ chỉ vẽ use case **đã có trong code**; `UC-AD-06 (Tạo tour từ đề xuất đã duyệt)` và thông báo cho admin vẫn nằm ở phần "chưa triển khai".
+- Nếu trường yêu cầu đúng chuẩn UML không kèm công cụ, có thể xuất SVG/PNG từ `.puml` để dán vào Word.
+
+---
+
 ## 8. Mẫu ghi cho lần cập nhật sau
 
 ```md

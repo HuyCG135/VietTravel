@@ -1,0 +1,47 @@
+﻿@startuml UC_ChiTiet_Admin
+' ============================================================
+' BIỂU ĐỒ USE CASE CHI TIẾT — Nhóm ADMIN
+' Module: Đề xuất tour
+' Luồng: xem hàng đợi -> xem chi tiết -> duyệt / từ chối
+' ============================================================
+
+left to right direction
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 16
+skinparam ranksep 55
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #1E3A8A
+  FontColor #0F172A
+}
+skinparam actor {
+  BackgroundColor #DBEAFE
+  BorderColor #1E3A8A
+}
+
+actor "Admin /\nNhân viên tour" as AD
+
+rectangle "Module Đề xuất tour — Admin" {
+
+  usecase "UC-AD-01\nXem hàng đợi đề xuất\n(lọc / tìm / đếm)" as AD01
+  usecase "UC-AD-02\nXem chi tiết đề xuất" as AD02
+  usecase "UC-AD-03\nXử lý đề xuất tour" as AD03
+  usecase "UC-AD-04\nDuyệt đề xuất" as AD04
+  usecase "UC-AD-05\nTừ chối đề xuất\n(kèm lý do)" as AD05
+
+  usecase "Đánh dấu\nĐang xem xét" as REV
+  usecase "Ghi nhận người duyệt\nvà thời điểm duyệt" as LOG
+}
+
+AD -- AD01
+AD -- AD03
+
+AD03 ..> AD02 : <<include>>
+AD03 ..> LOG : <<include>>
+AD04 ..> AD03 : <<extend>>
+AD05 ..> AD03 : <<extend>>
+REV ..> AD03 : <<extend>>
+
+@enduml

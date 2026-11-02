@@ -14,10 +14,15 @@ export default function DashboardLayout({ children }) {
     const user = getUser();
     const role = user?.role;
 
+    const groups = menuForRole(role);
+    // Role chỉ có 1 mục menu (vd: booking-staff) thì không cần Sidebar:
+    // dùng thanh ngang gọn để nội dung rộng hơn.
+    const compact = groups.reduce((total, group) => total + group.items.length, 0) <= 1;
+
     // Gắn trạng thái mở drawer với path hiện tại: khi đổi route tự đóng
     // mà không cần setState trong effect.
     const [sidebarState, setSidebarState] = useState({ open: false, path: location.pathname });
-    const sidebarOpen = sidebarState.open && sidebarState.path === location.pathname;
+    const sidebarOpen = !compact && sidebarState.open && sidebarState.path === location.pathname;
     const openSidebar = () => setSidebarState({ open: true, path: location.pathname });
     const closeSidebar = () => setSidebarState({ open: false, path: location.pathname });
 
@@ -28,17 +33,23 @@ export default function DashboardLayout({ children }) {
     }, []);
 
     return (
-        <div className={`admin-shell ${sidebarOpen ? "sidebar-open" : ""}`}>
-            <Sidebar
-                groups={menuForRole(role)}
-                user={user}
-                role={role}
-                open={sidebarOpen}
-                onClose={closeSidebar}
-            />
+        <div
+            className={`admin-shell ${compact ? "is-compact" : ""} ${
+                sidebarOpen ? "sidebar-open" : ""
+            }`}
+        >
+            {!compact && (
+                <Sidebar
+                    groups={groups}
+                    user={user}
+                    role={role}
+                    open={sidebarOpen}
+                    onClose={closeSidebar}
+                />
+            )}
 
             <div className="main">
-                <Header role={role} onMenuClick={openSidebar} />
+                <Header role={role} compact={compact} onMenuClick={openSidebar} />
 
                 <main className="admin-content">{children}</main>
 

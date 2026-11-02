@@ -358,10 +358,10 @@ export const notifications = [
     {
         id: 3,
         title: "Doanh thu tuần này tăng 12,5%",
-        text: "Xem báo cáo chi tiết tại trang thống kê.",
+        text: "Xem báo cáo chi tiết tại trang Tổng quan.",
         time: "1 giờ trước",
         icon: "ChartColumn",
-        to: "/admin/statistics",
+        to: "/admin",
         roles: ["admin"],
     },
 ];

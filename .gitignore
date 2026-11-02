@@ -59,6 +59,10 @@ opencode.json
 
 # Draw.io files
 *.drawio
+
+# Công cụ render biểu đồ (không commit binary nặng)
+docs/uc/plantuml.jar
+docs/uc/tools/
 # Antigravity
 .agents
 

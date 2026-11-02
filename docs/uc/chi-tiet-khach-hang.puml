@@ -1,0 +1,53 @@
+﻿@startuml UC_ChiTiet_KhachHang
+' ============================================================
+' BIỂU ĐỒ USE CASE CHI TIẾT — Nhóm KHÁCH HÀNG
+' Module: Đề xuất tour
+' Luồng: nhập nhu cầu -> AI sinh bản nháp -> chỉnh sửa -> gửi
+' ============================================================
+
+left to right direction
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 16
+skinparam ranksep 55
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #1E3A8A
+  FontColor #0F172A
+}
+skinparam actor {
+  BackgroundColor #DBEAFE
+  BorderColor #1E3A8A
+}
+
+actor "Khách hàng\n(đã đăng nhập)" as KH
+actor "Hệ thống AI\n(Ollama)" as AI
+
+rectangle "Module Đề xuất tour — Khách hàng" {
+
+  usecase "UC-KH-01\nĐề xuất tour\ntheo nhu cầu" as KH01
+  usecase "UC-KH-02\nSinh bản nháp\ntour bằng AI" as KH02
+  usecase "UC-KH-03\nChỉnh sửa bản nháp\nbằng hội thoại" as KH03
+  usecase "UC-KH-04\nGửi đề xuất\ntới admin" as KH04
+  usecase "UC-KH-05\nXem danh sách\nđề xuất của tôi" as KH05
+  usecase "UC-KH-06\nXem chi tiết đề xuất\nvà phản hồi admin" as KH06
+
+  usecase "Kiểm tra dữ liệu\nđầu vào" as VAL
+  usecase "Tìm tour tương tự\nlàm mốc giá" as SIM
+}
+
+KH -- KH01
+KH -- KH03
+KH -- KH05
+KH -- KH06
+
+KH01 ..> KH02 : <<include>>
+KH01 ..> KH04 : <<include>>
+KH01 ..> VAL : <<include>>
+KH03 ..> KH02 : <<extend>>
+KH02 ..> SIM : <<include>>
+
+KH02 -- AI
+
+@enduml

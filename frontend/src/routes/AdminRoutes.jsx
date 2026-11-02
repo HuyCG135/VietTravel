@@ -11,7 +11,6 @@ import ServiceList from "../features/admin/services/List";
 import TourServiceList from "../features/admin/tour-services/List";
 import TourImageList from "../features/admin/tour-images/List";
 import UserList from "../features/admin/users/List";
-import Statistics from "../features/admin/statistics/List";
 
 export default function AdminRoutes() {
     return (
@@ -35,7 +34,6 @@ export default function AdminRoutes() {
             <Route path="tour-images" element={<TourImageList />} />
             <Route path="tour-images/:tourId/edit" element={<Navigate to="/admin/tour-images" replace />} />
             <Route path="users" element={<UserList />} />
-            <Route path="statistics" element={<Statistics />} />
         </Routes>
     );
 }

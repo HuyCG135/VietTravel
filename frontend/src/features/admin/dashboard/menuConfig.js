@@ -11,7 +11,6 @@ import {
     ListChecks,
     Images,
     Users,
-    ChartColumn,
 } from "lucide-react";
 
 export const STAFF_ROLES = ["admin", "tour-staff", "booking-staff"];
@@ -83,7 +82,6 @@ export const ADMIN_MENU = [
         label: "Hệ thống",
         items: [
             { to: "/admin/users", label: "Tài khoản nhân viên", icon: Users, roles: ["admin"] },
-            { to: "/admin/statistics", label: "Thống kê", icon: ChartColumn, roles: ["admin"] },
         ],
     },
 ];
@@ -143,7 +141,6 @@ const ROUTE_ACCESS = {
     "tour-images": TOUR_ROLES,
     bookings: BOOKING_ROLES,
     users: ["admin"],
-    statistics: ["admin"],
 };
 
 export function canAccess(role, pathname) {

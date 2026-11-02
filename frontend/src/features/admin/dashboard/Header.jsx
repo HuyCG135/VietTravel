@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     Search,
     Bell,
     ChevronDown,
     Menu,
     LogOut,
-    Home,
     UserRound,
     CheckCheck,
     CalendarCheck,
@@ -14,9 +13,10 @@ import {
     ChartColumn,
 } from "lucide-react";
 import defaultAvatar from "../../../assets/images/image.png";
+import logoIcon from "../../../assets/images/icon.svg";
 import { getUser, logout } from "../../auth/auth.api";
 import { notifications } from "./data/mockData";
-import { ROLE_LABEL, itemsForRole, pageMeta } from "./menuConfig";
+import { ROLE_LABEL, homeForRole, itemsForRole, pageMeta } from "./menuConfig";
 
 const NOTIFICATION_ICONS = {
     CalendarCheck,
@@ -33,7 +33,8 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("vi-VN", {
 
 // Header quản trị: tiêu đề trang, tìm kiếm nhanh, thông báo, tài khoản.
 // Không có các tab điều hướng của site khách — menu đã nằm ở Sidebar.
-export default function Header({ role, onMenuClick }) {
+// compact = role chỉ có 1 mục: không có Sidebar nên Header mang luôn logo.
+export default function Header({ role, onMenuClick, compact = false }) {
     const navigate = useNavigate();
     const location = useLocation();
     const user = getUser();
@@ -43,7 +44,8 @@ export default function Header({ role, onMenuClick }) {
     // Trang Tổng quan (/admin) chưa có tiêu đề riêng trong nội dung nên Header
     // hiển thị h1; các trang khác đã có tiêu đề riêng nên chỉ hiện breadcrumb.
     const isOverview = location.pathname.replace(/\/+$/, "") === "/admin";
-    const crumbs = isOverview
+    const showTitle = isOverview || compact;
+    const crumbs = isOverview || compact
         ? []
         : [...(meta.group && meta.group !== meta.title ? [meta.group] : []), meta.title];
 
@@ -131,34 +133,42 @@ export default function Header({ role, onMenuClick }) {
     return (
         <header className="header">
             <div className="header-left">
-                <button
-                    type="button"
-                    className="header-menu-btn"
-                    onClick={onMenuClick}
-                    aria-label="Mở menu quản trị"
-                >
-                    <Menu size={20} />
-                </button>
+                {compact ? (
+                    <Link to={homeForRole(role)} className="header-brand">
+                        <img src={logoIcon} alt="" width="26" height="26" />
+                        <span>Vietravel</span>
+                        <em>Admin</em>
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        className="header-menu-btn"
+                        onClick={onMenuClick}
+                        aria-label="Mở menu quản trị"
+                    >
+                        <Menu size={20} />
+                    </button>
+                )}
 
                 <div className="header-title">
-                    <p className="header-breadcrumb">
-                        Quản trị
-                        {crumbs.slice(0, -1).map((crumb) => (
-                            <span key={crumb}>
-                                <i className="sep">/</i>
-                                {crumb}
-                            </span>
-                        ))}
-                        {crumbs.length > 0 && (
+                    {crumbs.length > 0 && (
+                        <p className="header-breadcrumb">
+                            Quản trị
+                            {crumbs.slice(0, -1).map((crumb) => (
+                                <span key={crumb}>
+                                    <i className="sep">/</i>
+                                    {crumb}
+                                </span>
+                            ))}
                             <span>
                                 <i className="sep">/</i>
                                 <strong>{crumbs[crumbs.length - 1]}</strong>
                             </span>
-                        )}
-                    </p>
+                        </p>
+                    )}
                     {/* Tổng quan chưa có tiêu đề riêng nên hiển thị ở Header;
                         các trang nghiệp vụ đã có tiêu đề riêng, tránh lặp lại. */}
-                    {isOverview && <h1>{meta.title}</h1>}
+                    {showTitle && <h1>{meta.title}</h1>}
                     <p className="header-subtitle">
                         Xin chào {user?.fullname || "bạn"} · {DATE_FORMATTER.format(new Date())}
                     </p>
@@ -315,11 +325,6 @@ export default function Header({ role, onMenuClick }) {
                                 <li>
                                     <button type="button" onClick={() => goTo("/admin/profile")}>
                                         <UserRound size={16} /> Trang cá nhân
-                                    </button>
-                                </li>
-                                <li>
-                                    <button type="button" onClick={() => goTo("/")}>
-                                        <Home size={16} /> Về trang chủ
                                     </button>
                                 </li>
                             </ul>
