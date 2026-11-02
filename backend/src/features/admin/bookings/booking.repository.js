@@ -172,7 +172,7 @@ class AdminBooking {
                 db.raw("COUNT(*) as total_bookings"),
                 db.raw("COALESCE(SUM(adults + children), 0) as participants"),
                 db.raw(
-                    "COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_price ELSE 0 END), 0) as earnings",
+                    "COALESCE(SUM(paid_amount), 0) as earnings",
                 ),
             )
             .first();
@@ -193,7 +193,7 @@ class AdminBooking {
                 db.raw("COUNT(*) as total_bookings"),
                 db.raw("COALESCE(SUM(adults + children), 0) as participants"),
                 db.raw(
-                    "COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_price ELSE 0 END), 0) as earnings",
+                    "COALESCE(SUM(paid_amount), 0) as earnings",
                 ),
             )
             .first();
@@ -214,7 +214,7 @@ class AdminBooking {
                 db.raw("COUNT(*) as bookings"),
                 db.raw("COALESCE(SUM(adults + children), 0) as participants"),
                 db.raw(
-                    "COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_price ELSE 0 END), 0) as earnings",
+                    "COALESCE(SUM(paid_amount), 0) as earnings",
                 ),
             )
             .groupByRaw("DATE_FORMAT(created_at, '%Y-%m')")
