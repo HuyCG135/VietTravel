@@ -1,7 +1,16 @@
 import { StatusPill } from "./common";
 import { formatDateTime } from "../bookingFormat";
 
-export default function BookingHeader({ booking, isCompleted, onOpenInvoice, onOpenCancel, onOpenPay, paying }) {
+export default function BookingHeader({
+    booking,
+    isCompleted,
+    hasReviewed,
+    onOpenReview,
+    onOpenInvoice,
+    onOpenCancel,
+    onOpenPay,
+    paying,
+}) {
     const b = booking;
     return (
         <div className="bg-surface rounded-2xl border border-border p-5 sm:p-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -19,6 +28,22 @@ export default function BookingHeader({ booking, isCompleted, onOpenInvoice, onO
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+                {isCompleted && !hasReviewed && (
+                    <button
+                        type="button"
+                        onClick={onOpenReview}
+                        className="inline-flex items-center gap-2 bg-accent hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-xl text-sm transition-colors cursor-pointer shadow-sm"
+                    >
+                        <i className="fa-solid fa-star" />
+                        Đánh giá tour
+                    </button>
+                )}
+                {isCompleted && hasReviewed && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <i className="fa-solid fa-circle-check text-emerald-600" />
+                        Đã đánh giá
+                    </span>
+                )}
                 {b.payment_status !== "paid" && b.status !== "cancelled" && (
                     <button
                         type="button"

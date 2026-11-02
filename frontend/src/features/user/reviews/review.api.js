@@ -13,6 +13,15 @@ export async function getMyReviews() {
     return res.json();
 }
 
+export async function createReview(data) {
+    const res = await fetch(`${API_URL}/reviews`, {
+        method: "POST",
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(data),
+    });
+    return res.json();
+}
+
 export async function updateReview(id, data) {
     const res = await fetch(`${API_URL}/reviews/${id}`, {
         method: "PUT",
