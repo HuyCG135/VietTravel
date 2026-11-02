@@ -8,7 +8,7 @@
 
 ## 1. Trạng thái hiện tại
 
-- **Cập nhật gần nhất:** 2026-11-02
+- **Cập nhật gần nhất:** 2026-11-03
 - **Backend:** Express + MySQL (`db_viet_travel`, port `3307`), chạy `npm run dev` trong `backend/`.
 - **Frontend:** React + Vite, chạy `npm run dev` trong `frontend/` (proxy `/api` → `http://localhost:3000`).
 - **Đăng nhập admin test:** `admin@viettour.vn` / `123456` (field là `username`).
@@ -672,6 +672,31 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 - Sơ đồ chỉ vẽ use case **đã có trong code**; `UC-AD-06 (Tạo tour từ đề xuất đã duyệt)` và thông báo cho admin vẫn nằm ở phần "chưa triển khai".
 - Nếu trường yêu cầu đúng chuẩn UML không kèm công cụ, có thể xuất SVG/PNG từ `.puml` để dán vào Word.
+
+---
+
+### 2026-11-03 — Đồng bộ hiệu ứng nảy lên (animate-modal-in) cho pop up Quản lý tour, Lịch trình, Hình ảnh, Dịch vụ và Dịch vụ tour
+
+**Đã làm:**
+
+- [x] Nâng cấp component dùng chung `frontend/src/components/Modal.jsx`: bổ sung size `2xl` (`max-w-6xl`), hỗ trợ prop `className`, thêm class `custom-scrollbar` cho thanh cuộn.
+- [x] Cập nhật pop up Thêm/Sửa tour (`frontend/src/features/admin/tours/TourFormModal.jsx`) sang component `Modal` với hiệu ứng backdrop mờ `animate-fade-in` và hộp thoại nảy lên `animate-modal-in`.
+- [x] Cập nhật pop up xác nhận xóa tour (`frontend/src/features/admin/tours/List.jsx`) sang dùng `Modal` (size `sm`, `animate-modal-in`).
+- [x] Cập nhật pop up Chỉnh sửa lịch trình (`frontend/src/features/admin/itineraries/ItineraryFormModal.jsx`) sang `Modal` (size `2xl`, `animate-modal-in`).
+- [x] Cập nhật pop up Quản lý hình ảnh tour (`frontend/src/features/admin/tour-images/TourImageFormModal.jsx`) sang `Modal` (size `2xl`, `animate-modal-in`), giữ an toàn cho `ImageLightbox` khi phóng to ảnh.
+- [x] Cập nhật pop up Thêm/Sửa dịch vụ (`frontend/src/features/admin/services/ServiceFormModal.jsx`) sang `Modal` (size `lg`, `animate-modal-in`).
+- [x] Cập nhật pop up xác nhận xóa dịch vụ (`frontend/src/features/admin/services/List.jsx`) sang `Modal` (size `sm`, `animate-modal-in`).
+- [x] Cập nhật pop up Chọn dịch vụ cho tour (`frontend/src/features/admin/tour-services/TourServiceFormModal.jsx`) sang `Modal` (size `lg`, `animate-modal-in`).
+- [x] Chạy `npm run lint` (pass) và `npm run build` (pass) thành công.
+
+**File liên quan:**
+
+- Sửa: `frontend/src/components/Modal.jsx`, `frontend/src/features/admin/tours/TourFormModal.jsx`, `frontend/src/features/admin/tours/List.jsx`, `frontend/src/features/admin/itineraries/ItineraryFormModal.jsx`, `frontend/src/features/admin/tour-images/TourImageFormModal.jsx`, `frontend/src/features/admin/services/ServiceFormModal.jsx`, `frontend/src/features/admin/services/List.jsx`, `frontend/src/features/admin/tour-services/TourServiceFormModal.jsx`, `PROGRESS.md`.
+
+**Kiểm tra:**
+
+- `npm run lint` không có cảnh báo/lỗi nào.
+- `npm run build` thành công với Vite.
 
 ---
 

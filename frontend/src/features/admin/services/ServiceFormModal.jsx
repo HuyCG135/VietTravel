@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Modal from "../../../components/Modal";
 
 const ICON_OPTIONS = [
     "fa-solid fa-concierge-bell",
@@ -96,18 +97,15 @@ export default function ServiceFormModal({ mode, service, saving, onClose, onSub
     };
 
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="service-form-title"
-            onClick={() => !saving && onClose()}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4"
+        <Modal
+            open
+            onClose={saving ? undefined : onClose}
+            closeOnBackdrop={!saving}
+            size="lg"
+            showClose={false}
+            ariaLabel={isEdit ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ"}
         >
-            <form
-                onClick={(event) => event.stopPropagation()}
-                onSubmit={handleSubmit}
-                className="custom-scrollbar max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-surface p-5 shadow-2xl motion-safe:animate-toast-in sm:max-w-2xl sm:rounded-2xl"
-            >
+            <form onSubmit={handleSubmit} className="p-5 sm:p-6">
                 <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
                         <h3 id="service-form-title" className="text-lg font-bold text-foreground">
@@ -286,6 +284,6 @@ export default function ServiceFormModal({ mode, service, saving, onClose, onSub
                     </div>
                 </div>
             </form>
-        </div>
+        </Modal>
     );
 }

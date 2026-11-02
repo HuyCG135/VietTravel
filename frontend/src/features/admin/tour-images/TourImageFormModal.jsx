@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
+import Modal from "../../../components/Modal";
 import ImageLightbox from "../../../components/ImageLightbox";
 import { getTourImageDetail, uploadTourImages, deleteTourImage } from "./tour-images.api";
 
@@ -60,15 +61,6 @@ export default function TourImageFormModal({ tour, onClose, onSaved }) {
             previewsRef.current.forEach((preview) => URL.revokeObjectURL(preview.url));
         };
     }, []);
-
-    useEffect(() => {
-        const onKeyDown = (event) => {
-            if (event.key !== "Escape" || busy || preview) return;
-            onClose();
-        };
-        window.addEventListener("keydown", onKeyDown);
-        return () => window.removeEventListener("keydown", onKeyDown);
-    }, [busy, preview, onClose]);
 
     const resetSelection = () => {
         previewsRef.current.forEach((preview) => URL.revokeObjectURL(preview.url));
@@ -184,279 +176,279 @@ export default function TourImageFormModal({ tour, onClose, onSaved }) {
     };
 
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tour-image-form-title"
-            onClick={closeModal}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4"
-        >
-            <div
-                onClick={(event) => event.stopPropagation()}
-                className="custom-scrollbar max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-surface p-5 shadow-2xl motion-safe:animate-toast-in sm:max-w-4xl sm:rounded-2xl lg:max-w-6xl"
+        <>
+            <Modal
+                open
+                onClose={busy ? undefined : closeModal}
+                closeOnBackdrop={!busy}
+                size="2xl"
+                showClose={false}
+                ariaLabel="Quản lý hình ảnh tour"
             >
-                <div className="mb-4 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                        <h3 id="tour-image-form-title" className="text-lg font-bold text-foreground">
-                            Quản lý hình ảnh tour
-                        </h3>
-                        <p className="mt-0.5 truncate text-sm text-muted">{tour?.name}</p>
+                <div className="p-5 sm:p-6">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 id="tour-image-form-title" className="text-lg font-bold text-foreground">
+                                Quản lý hình ảnh tour
+                            </h3>
+                            <p className="mt-0.5 truncate text-sm text-muted">{tour?.name}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={closeModal}
+                            disabled={busy}
+                            aria-label="Đóng"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-primary-50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                        >
+                            <i className="fa-solid fa-xmark" />
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={closeModal}
-                        disabled={busy}
-                        aria-label="Đóng"
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-primary-50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
-                    >
-                        <i className="fa-solid fa-xmark" />
-                    </button>
-                </div>
 
-                <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-1.5 rounded-xl border border-border bg-primary-50/60 px-4 py-2.5 text-sm">
-                    <span className="text-muted">
-                        Mã tour: <b className="text-foreground">#{tour?.id}</b>
-                    </span>
-                    <span className="text-muted">
-                        Miền: <b className="text-foreground">{tour?.region || "—"}</b>
-                    </span>
-                    <span className="text-muted">
-                        Thời gian: <b className="text-foreground">{tour?.duration || "—"}</b>
-                    </span>
-                    <span className="text-muted">
-                        Số ảnh: <b className="text-primary">{images.length}</b>
-                    </span>
-                </div>
-
-                {loading ? (
-                    <div className="flex justify-center items-center py-16">
-                        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" role="status" />
+                    <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-1.5 rounded-xl border border-border bg-primary-50/60 px-4 py-2.5 text-sm">
+                        <span className="text-muted">
+                            Mã tour: <b className="text-foreground">#{tour?.id}</b>
+                        </span>
+                        <span className="text-muted">
+                            Miền: <b className="text-foreground">{tour?.region || "—"}</b>
+                        </span>
+                        <span className="text-muted">
+                            Thời gian: <b className="text-foreground">{tour?.duration || "—"}</b>
+                        </span>
+                        <span className="text-muted">
+                            Số ảnh: <b className="text-primary">{images.length}</b>
+                        </span>
                     </div>
-                ) : loadError ? (
-                    <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                        <i className="fa-solid fa-circle-exclamation mr-1.5" />
-                        {loadError}
-                    </div>
-                ) : (
-                    <>
-                        <section className="rounded-2xl border border-border bg-surface p-4">
-                            <h4 className="mb-3 text-sm font-bold text-foreground">
-                                <i className="fa-solid fa-cloud-arrow-up mr-2 text-primary" />
-                                Tải ảnh từ thiết bị
-                            </h4>
 
-                            <div
-                                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-                                onDragLeave={() => setDragging(false)}
-                                onDrop={(e) => {
-                                    e.preventDefault();
-                                    setDragging(false);
-                                    if (!busy) addFiles(e.dataTransfer.files);
-                                }}
-                                onClick={() => !busy && fileInputRef.current?.click()}
-                                className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors duration-150 ${
-                                    dragging
-                                        ? "border-primary bg-primary-50"
-                                        : "border-border bg-primary-50/40 hover:border-primary/60"
-                                }`}
-                            >
-                                <i className="fa-solid fa-cloud-arrow-up mb-2 text-primary" style={{ fontSize: 28 }} />
-                                <p className="text-sm font-medium text-foreground">
-                                    Kéo thả ảnh vào đây hoặc bấm để chọn từ thiết bị
-                                </p>
-                                <p className="mt-1 text-xs text-muted">
-                                    JPG, PNG, WEBP, GIF, AVIF — tối đa {formatSize(MAX_FILE_SIZE)} mỗi ảnh, {MAX_FILES} ảnh mỗi lần
-                                </p>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    className="hidden"
-                                    onChange={(e) => addFiles(e.target.files)}
-                                />
-                            </div>
+                    {loading ? (
+                        <div className="flex justify-center items-center py-16">
+                            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" role="status" />
+                        </div>
+                    ) : loadError ? (
+                        <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                            <i className="fa-solid fa-circle-exclamation mr-1.5" />
+                            {loadError}
+                        </div>
+                    ) : (
+                        <>
+                            <section className="rounded-2xl border border-border bg-surface p-4">
+                                <h4 className="mb-3 text-sm font-bold text-foreground">
+                                    <i className="fa-solid fa-cloud-arrow-up mr-2 text-primary" />
+                                    Tải ảnh từ thiết bị
+                                </h4>
 
-                            {previews.length > 0 && (
-                                <div className="mt-4">
-                                    <div className="mb-2 flex items-center justify-between">
-                                        <p className="text-sm font-semibold text-foreground">
-                                            Đã chọn {selectedFiles.length}/{MAX_FILES} ảnh
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={resetSelection}
-                                            disabled={busy}
-                                            className="cursor-pointer text-sm font-semibold text-muted transition-colors duration-150 hover:text-danger disabled:opacity-50"
-                                        >
-                                            <i className="fa-solid fa-xmark mr-1" />
-                                            Xóa lựa chọn
-                                        </button>
+                                <div
+                                    onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                                    onDragLeave={() => setDragging(false)}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        setDragging(false);
+                                        if (!busy) addFiles(e.dataTransfer.files);
+                                    }}
+                                    onClick={() => !busy && fileInputRef.current?.click()}
+                                    className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors duration-150 ${
+                                        dragging
+                                            ? "border-primary bg-primary-50"
+                                            : "border-border bg-primary-50/40 hover:border-primary/60"
+                                    }`}
+                                >
+                                    <i className="fa-solid fa-cloud-arrow-up mb-2 text-primary" style={{ fontSize: 28 }} />
+                                    <p className="text-sm font-medium text-foreground">
+                                        Kéo thả ảnh vào đây hoặc bấm để chọn từ thiết bị
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted">
+                                        JPG, PNG, WEBP, GIF, AVIF — tối đa {formatSize(MAX_FILE_SIZE)} mỗi ảnh, {MAX_FILES} ảnh mỗi lần
+                                    </p>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="hidden"
+                                        onChange={(e) => addFiles(e.target.files)}
+                                    />
+                                </div>
+
+                                {previews.length > 0 && (
+                                    <div className="mt-4">
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <p className="text-sm font-semibold text-foreground">
+                                                Đã chọn {selectedFiles.length}/{MAX_FILES} ảnh
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={resetSelection}
+                                                disabled={busy}
+                                                className="cursor-pointer text-sm font-semibold text-muted transition-colors duration-150 hover:text-danger disabled:opacity-50"
+                                            >
+                                                <i className="fa-solid fa-xmark mr-1" />
+                                                Xóa lựa chọn
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                                            {previews.map((preview, index) => (
+                                                <div key={`${preview.name}-${index}`} className="group relative overflow-hidden rounded-xl border border-border">
+                                                    <img src={preview.url} alt={preview.name} className="h-24 w-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removePreview(index)}
+                                                        disabled={busy}
+                                                        aria-label={`Bỏ ảnh ${preview.name}`}
+                                                        className="absolute right-1.5 top-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-slate-950/70 text-white transition-colors duration-150 hover:bg-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
+                                                    >
+                                                        <i className="fa-solid fa-xmark text-xs" />
+                                                    </button>
+                                                    <p className="truncate px-2 py-1 text-[11px] text-muted" title={preview.name}>
+                                                        {preview.name}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-                                        {previews.map((preview, index) => (
-                                            <div key={`${preview.name}-${index}`} className="group relative overflow-hidden rounded-xl border border-border">
-                                                <img src={preview.url} alt={preview.name} className="h-24 w-full object-cover" />
+                                )}
+
+                                <div className="mt-4 flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={resetSelection}
+                                        disabled={busy || selectedFiles.length === 0}
+                                        className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted transition-colors duration-150 hover:bg-slate-50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleUpload}
+                                        disabled={busy || selectedFiles.length === 0}
+                                        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                                    >
+                                        {uploading ? (
+                                            <>
+                                                <i className="fa-solid fa-spinner fa-spin mr-2" />
+                                                Đang tải lên...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-upload mr-2" />
+                                                Tải lên Cloudinary
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section className="mt-4 rounded-2xl border border-border bg-surface p-4">
+                                <h4 className="mb-1 text-sm font-bold text-foreground">
+                                    <i className="fa-solid fa-images mr-2 text-primary" />
+                                    Ảnh của tour
+                                </h4>
+                                <p className="mb-3 text-xs text-muted">Ảnh đầu tiên sẽ hiển thị trong thư viện tour.</p>
+
+                                {images.length === 0 ? (
+                                    <div className="rounded-xl border border-dashed border-border py-10 text-center text-muted">
+                                        <i className="fa-regular fa-image mb-2" style={{ fontSize: 28 }} />
+                                        <p className="text-sm">Tour này chưa có ảnh nào.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                                        {images.map((image, index) => (
+                                            <div key={image.id} className="relative overflow-hidden rounded-xl border border-border">
                                                 <button
                                                     type="button"
-                                                    onClick={() => removePreview(index)}
-                                                    disabled={busy}
-                                                    aria-label={`Bỏ ảnh ${preview.name}`}
-                                                    className="absolute right-1.5 top-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-slate-950/70 text-white transition-colors duration-150 hover:bg-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
+                                                    onClick={() =>
+                                                        setPreview({
+                                                            src: image.image,
+                                                            alt: `Ảnh ${index + 1} của ${tour?.name ?? "tour"}`,
+                                                            caption: tour?.name,
+                                                        })
+                                                    }
+                                                    title="Bấm để xem ảnh"
+                                                    className="group relative block w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                                                 >
-                                                    <i className="fa-solid fa-xmark text-xs" />
+                                                    <img
+                                                        src={image.image}
+                                                        alt={`Ảnh ${index + 1} của ${tour?.name ?? "tour"}`}
+                                                        className="h-36 w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                                        loading="lazy"
+                                                    />
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-white opacity-0 transition-opacity duration-200 group-hover:bg-slate-950/35 group-hover:opacity-100">
+                                                        <i className="fa-solid fa-magnifying-glass-plus" style={{ fontSize: 20 }} />
+                                                    </span>
                                                 </button>
-                                                <p className="truncate px-2 py-1 text-[11px] text-muted" title={preview.name}>
-                                                    {preview.name}
+                                                {index === 0 && (
+                                                    <span className="absolute left-2 top-2 rounded-lg bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">
+                                                        Ảnh đầu
+                                                    </span>
+                                                )}
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setConfirmingId(image.id)}
+                                                    disabled={busy}
+                                                    title="Xóa ảnh"
+                                                    aria-label={`Xóa ảnh ${image.id}`}
+                                                    className="absolute right-2 top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-border bg-surface/95 text-muted transition-colors duration-150 hover:border-danger/30 hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/40 disabled:opacity-40"
+                                                >
+                                                    {deletingId === image.id ? (
+                                                        <i className="fa-solid fa-spinner fa-spin" />
+                                                    ) : (
+                                                        <i className="fa-solid fa-trash" />
+                                                    )}
+                                                </button>
+
+                                                <p className="truncate px-2 py-1.5 text-[11px] text-muted" title={image.image}>
+                                                    #{image.id}
                                                 </p>
+
+                                                {confirmingId === image.id && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/70 p-2 text-center">
+                                                        <p className="text-xs font-semibold text-white">Xóa ảnh này?</p>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDelete(image.id)}
+                                                                disabled={busy}
+                                                                className="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-danger/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
+                                                            >
+                                                                {deletingId === image.id ? (
+                                                                    <i className="fa-solid fa-spinner fa-spin" />
+                                                                ) : (
+                                                                    "Xóa"
+                                                                )}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setConfirmingId(null)}
+                                                                disabled={busy}
+                                                                className="rounded-lg bg-surface px-3 py-1.5 text-xs font-semibold text-foreground transition-colors duration-150 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
+                                                            >
+                                                                Hủy
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </section>
+                        </>
+                    )}
 
-                            <div className="mt-4 flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    onClick={resetSelection}
-                                    disabled={busy || selectedFiles.length === 0}
-                                    className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted transition-colors duration-150 hover:bg-slate-50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleUpload}
-                                    disabled={busy || selectedFiles.length === 0}
-                                    className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
-                                >
-                                    {uploading ? (
-                                        <>
-                                            <i className="fa-solid fa-spinner fa-spin mr-2" />
-                                            Đang tải lên...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="fa-solid fa-upload mr-2" />
-                                            Tải lên Cloudinary
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </section>
-
-                        <section className="mt-4 rounded-2xl border border-border bg-surface p-4">
-                            <h4 className="mb-1 text-sm font-bold text-foreground">
-                                <i className="fa-solid fa-images mr-2 text-primary" />
-                                Ảnh của tour
-                            </h4>
-                            <p className="mb-3 text-xs text-muted">Ảnh đầu tiên sẽ hiển thị trong thư viện tour.</p>
-
-                            {images.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-border py-10 text-center text-muted">
-                                    <i className="fa-regular fa-image mb-2" style={{ fontSize: 28 }} />
-                                    <p className="text-sm">Tour này chưa có ảnh nào.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                                    {images.map((image, index) => (
-                                        <div key={image.id} className="relative overflow-hidden rounded-xl border border-border">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setPreview({
-                                                        src: image.image,
-                                                        alt: `Ảnh ${index + 1} của ${tour?.name ?? "tour"}`,
-                                                        caption: tour?.name,
-                                                    })
-                                                }
-                                                title="Bấm để xem ảnh"
-                                                className="group relative block w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                                            >
-                                                <img
-                                                    src={image.image}
-                                                    alt={`Ảnh ${index + 1} của ${tour?.name ?? "tour"}`}
-                                                    className="h-36 w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                                                    loading="lazy"
-                                                />
-                                                <span className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-white opacity-0 transition-opacity duration-200 group-hover:bg-slate-950/35 group-hover:opacity-100">
-                                                    <i className="fa-solid fa-magnifying-glass-plus" style={{ fontSize: 20 }} />
-                                                </span>
-                                            </button>
-                                            {index === 0 && (
-                                                <span className="absolute left-2 top-2 rounded-lg bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">
-                                                    Ảnh đầu
-                                                </span>
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setConfirmingId(image.id)}
-                                                disabled={busy}
-                                                title="Xóa ảnh"
-                                                aria-label={`Xóa ảnh ${image.id}`}
-                                                className="absolute right-2 top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-border bg-surface/95 text-muted transition-colors duration-150 hover:border-danger/30 hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/40 disabled:opacity-40"
-                                            >
-                                                {deletingId === image.id ? (
-                                                    <i className="fa-solid fa-spinner fa-spin" />
-                                                ) : (
-                                                    <i className="fa-solid fa-trash" />
-                                                )}
-                                            </button>
-
-                                            <p className="truncate px-2 py-1.5 text-[11px] text-muted" title={image.image}>
-                                                #{image.id}
-                                            </p>
-
-                                            {confirmingId === image.id && (
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/70 p-2 text-center">
-                                                    <p className="text-xs font-semibold text-white">Xóa ảnh này?</p>
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDelete(image.id)}
-                                                            disabled={busy}
-                                                            className="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-danger/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
-                                                        >
-                                                            {deletingId === image.id ? (
-                                                                <i className="fa-solid fa-spinner fa-spin" />
-                                                            ) : (
-                                                                "Xóa"
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setConfirmingId(null)}
-                                                            disabled={busy}
-                                                            className="rounded-lg bg-surface px-3 py-1.5 text-xs font-semibold text-foreground transition-colors duration-150 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:opacity-50"
-                                                        >
-                                                            Hủy
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </section>
-                    </>
-                )}
-
-                <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
-                    <span className="text-sm text-muted">
-                        Tổng cộng <b className="text-foreground">{images.length}</b> ảnh
-                    </span>
-                    <button
-                        type="button"
-                        onClick={closeModal}
-                        disabled={busy}
-                        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
-                    >
-                        Đóng
-                    </button>
+                    <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+                        <span className="text-sm text-muted">
+                            Tổng cộng <b className="text-foreground">{images.length}</b> ảnh
+                        </span>
+                        <button
+                            type="button"
+                            onClick={closeModal}
+                            disabled={busy}
+                            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                        >
+                            Đóng
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </Modal>
 
             {preview && (
                 <ImageLightbox
@@ -466,6 +458,6 @@ export default function TourImageFormModal({ tour, onClose, onSaved }) {
                     onClose={() => setPreview(null)}
                 />
             )}
-        </div>
+        </>
     );
 }

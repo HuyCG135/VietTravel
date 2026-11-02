@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Modal from "../../../components/Modal";
 import { getItineraryDetail } from "./itineraries.api";
 
 const inputClass =
@@ -102,18 +103,15 @@ export default function ItineraryFormModal({ tour, saving, onClose, onSubmit }) 
     };
 
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="itinerary-form-title"
-            onClick={() => !saving && onClose()}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4"
+        <Modal
+            open
+            onClose={saving ? undefined : onClose}
+            closeOnBackdrop={!saving}
+            size="2xl"
+            showClose={false}
+            ariaLabel="Chỉnh sửa lịch trình"
         >
-            <form
-                onClick={(event) => event.stopPropagation()}
-                onSubmit={handleSubmit}
-                className="custom-scrollbar max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-surface p-5 shadow-2xl motion-safe:animate-toast-in sm:max-w-4xl sm:rounded-2xl lg:max-w-6xl"
-            >
+            <form onSubmit={handleSubmit} className="p-5 sm:p-6">
                 <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
                         <h3 id="itinerary-form-title" className="text-lg font-bold text-foreground">
@@ -249,6 +247,6 @@ export default function ItineraryFormModal({ tour, saving, onClose, onSubmit }) 
                     </div>
                 </div>
             </form>
-        </div>
+        </Modal>
     );
 }

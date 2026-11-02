@@ -7,6 +7,7 @@ import Pagination from "../../tours/Pagination";
 import SearchBox from "../../../components/SearchBox";
 import SelectMenu from "../../../components/SelectMenu";
 import ImageLightbox from "../../../components/ImageLightbox";
+import Modal from "../../../components/Modal";
 
 const formatPrice = (value) => new Intl.NumberFormat("vi-VN").format(value || 0);
 const formatMoney = (value) => `${new Intl.NumberFormat("vi-VN").format(value || 0)}đ`;
@@ -495,17 +496,15 @@ export default function TourList() {
             )}
 
             {deleting && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="delete-tour-title"
-                    onClick={() => !deletingLoading && setDeleting(null)}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+                <Modal
+                    open
+                    onClose={deletingLoading ? undefined : () => setDeleting(null)}
+                    closeOnBackdrop={!deletingLoading}
+                    size="sm"
+                    showClose={false}
+                    ariaLabel="Xác nhận xóa tour"
                 >
-                    <div
-                        className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl motion-safe:animate-toast-in"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="p-6">
                         <h3 id="delete-tour-title" className="mb-3 flex items-center gap-2 text-lg font-bold text-danger">
                             <i className="fa-solid fa-triangle-exclamation" />
                             Xóa tour
@@ -537,7 +536,7 @@ export default function TourList() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
 
             {preview && (
