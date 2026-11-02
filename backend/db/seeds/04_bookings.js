@@ -1,4 +1,6 @@
-// Seed booking thực tế (~50 đơn):
+// Seed booking thực tế (~50 đơn) theo nghiệp vụ mới:
+// - Chỉ có 2 trạng thái thanh toán chính: cọc 30% (deposit_paid) hoặc trả đủ (paid)
+// - Đơn đã hủy/yêu cầu hủy xuất phát từ đơn đã cọc hoặc đã trả đủ (không còn pending/unpaid 0đ)
 // - total_price tính đúng = adults*(price_default + price_moving) + children*(price_child + price_moving_child)
 // - created_at trải đều theo tháng và LUÔN trước ngày khởi hành (đặt tour trước khi đi)
 // - updated_at = thời điểm xác nhận / thanh toán / hủy (luôn sau created_at)
@@ -169,19 +171,25 @@ export async function seed(knex) {
         }
         if (!chosen || adults < 1 || remainingOf(chosen) < adults + children) return null;
 
+        // Nghiệp vụ mới: Không còn trạng thái chờ xử lý (pending) + chưa thu (unpaid 0đ).
+        // Chỉ có: Đã xác nhận (confirmed), Yêu cầu hủy (cancel_requested), Đã hủy (cancelled).
+        // Thanh toán: 1 là cọc 30% (deposit_paid), 2 là trả đủ 100% (paid), hoặc hoàn tiền (refunded khi đã hủy).
         const status = weighted([
-            ["confirmed", 55],
-            ["pending", 25],
+            ["confirmed", 70],
+            ["cancel_requested", 10],
             ["cancelled", 20],
         ]);
+
         let paymentStatus;
         if (status === "cancelled") {
-            paymentStatus = weighted([["refunded", 55], ["unpaid", 45]]);
-        } else if (status === "confirmed") {
-            // Đã xác nhận = đã cọc hoặc đã trả đủ (không còn "confirmed + unpaid")
-            paymentStatus = weighted([["paid", 80], ["deposit_paid", 20]]);
+            // Đơn đã hủy: trước đó đã thanh toán đủ và đã được hoàn tiền (refunded) hoặc phạt hủy
+            paymentStatus = "refunded";
+        } else if (status === "cancel_requested") {
+            // Yêu cầu hủy: chỉ xuất phát từ đơn đã thanh toán đầy đủ (paid)
+            paymentStatus = "paid";
         } else {
-            paymentStatus = "unpaid";
+            // Đã xác nhận: hoặc cọc 30%, hoặc đã trả đủ full
+            paymentStatus = weighted([["paid", 65], ["deposit_paid", 35]]);
         }
 
         const fromMember = rng() < 0.85;
@@ -209,7 +217,7 @@ export async function seed(knex) {
         const depositPercent = 30;
         const depositAmount = Math.round((totalPrice * depositPercent) / 100);
         let paidAmount = 0;
-        if (paymentStatus === "paid") paidAmount = totalPrice;
+        if (paymentStatus === "paid" || paymentStatus === "refunded") paidAmount = totalPrice;
         else if (paymentStatus === "deposit_paid") paidAmount = depositAmount;
 
         // Đơn đã cọc: để hạn trả nốt ở tương lai, tránh bị sweep hủy ngay khi demo.
@@ -300,7 +308,7 @@ export async function seed(knex) {
             updated_at: booking.updated_at,
         });
 
-        // Seed giao dịch mẫu vào booking_payments cho các đơn đã cọc hoặc đã trả đủ
+        // Seed giao dịch mẫu vào booking_payments cho các đơn đã cọc hoặc đã trả đủ / đã hủy
         if (booking.payment_status === "deposit_paid") {
             paymentRows.push({
                 booking_id: id,
@@ -315,11 +323,11 @@ export async function seed(knex) {
                 created_at: booking.created_at,
                 updated_at: booking.updated_at,
             });
-        } else if (booking.payment_status === "paid") {
+        } else if (booking.payment_status === "paid" || booking.payment_status === "refunded") {
             paymentRows.push({
                 booking_id: id,
                 type: "full",
-                amount: booking.paid_amount,
+                amount: booking.total_price,
                 status: "paid",
                 txn_ref: `BOK${id}_FULL_SEED_${Math.floor(booking.created_at.getTime() / 1000)}`,
                 provider_txn_no: `VNP${rand(10000000, 99999999)}`,

@@ -675,6 +675,23 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Cập nhật dữ liệu mẫu (Seed) chuẩn nghiệp vụ mới
+
+**Đã làm:**
+
+- [x] Chỉnh sửa file seed `backend/db/seeds/04_bookings.js`: loại bỏ hoàn toàn các đơn mẫu có trạng thái "Chờ xử lý" (`pending`) và "Chưa thu" (`unpaid` 0 đ).
+- [x] Phân bổ lại dữ liệu mẫu 50 đơn thực tế theo 3 nhóm chuẩn nghiệp vụ:
+  - **Đã xác nhận & Đã thanh toán full 100% (`confirmed + paid`):** 25 đơn (paid_amount = total_price).
+  - **Đã xác nhận & Đã cọc 30% (`confirmed + deposit_paid`):** 10 đơn (paid_amount = deposit_amount 30%, có hạn thanh toán balance_due_at trong tương lai).
+  - **Yêu cầu hủy (`cancel_requested + paid`):** 7 đơn (được tạo từ đơn đã trả đủ, đang chờ Admin duyệt).
+  - **Đã hủy & Đã hoàn tiền (`cancelled + refunded`):** 8 đơn (đã thanh toán trước đó và được hoàn tiền).
+- [x] Đồng bộ các bản ghi trong `booking_payments` tương ứng với từng giao dịch cọc / full.
+- [x] Chạy lại thành công toàn bộ `npm run seed` vào cơ sở dữ liệu.
+
+**File liên quan:**
+
+- Sửa: `backend/db/seeds/04_bookings.js`
+
 ### 2026-11-03 — Cập nhật sắp xếp danh sách booking theo thời gian cập nhật mới nhất
 
 **Đã làm:**
