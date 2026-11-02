@@ -270,6 +270,22 @@ class AdminBooking {
 
         return toNumber(row?.total);
     }
+
+    // Hoàn tiền: set payment_status=refunded + refunded_at, lưu refund_amount/refund_method/provider_ref/note.
+    static async refund(id, refundAmount, refundMethod, providerRef, note) {
+        const updated = await db("bookings")
+            .where("id", id)
+            .update({
+                payment_status: "refunded",
+                refunded_at: db.raw("NOW()"),
+                refund_amount: refundAmount,
+                refund_method: refundMethod,
+                refund_provider_ref: providerRef || null,
+                refund_note: note || null,
+                updated_at: db.raw("NOW()"),
+            });
+        return updated > 0;
+    }
 }
 
 export default AdminBooking;

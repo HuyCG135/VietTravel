@@ -6,6 +6,8 @@ import {
     getTopPackages,
     getTripsOverview,
     updateBookingStatus,
+    refundBooking,
+    getRefundInfo,
 } from "./booking.controller.js";
 import {
     validateIdParam,
@@ -14,11 +16,10 @@ import {
     validateStatusUpdate,
     validateTopPackagesQuery,
 } from "./booking.validate.js";
-import { isBookingStaff, verifyToken } from "../../../middlewares/auth.js";
+import { isBookingStaff, verifyToken, isAdmin } from "../../../middlewares/auth.js";
 
 const router = express.Router();
 
-// Route tĩnh phải khai báo TRƯỚC "/:id" để không bị nuốt thành id.
 router.get("/stats", verifyToken, isBookingStaff, getStats);
 router.get("/trips", verifyToken, isBookingStaff, validateRangeQuery, getTripsOverview);
 router.get(
@@ -35,8 +36,13 @@ router.put(
     "/:id/status",
     verifyToken,
     isBookingStaff,
+    validateIdParam,
     validateStatusUpdate,
     updateBookingStatus,
 );
+
+// ============ HOÀN TIỀN ============
+router.get("/:id/refund-info", verifyToken, isAdmin, validateIdParam, getRefundInfo);
+router.post("/:id/refund", verifyToken, isAdmin, validateIdParam, refundBooking);
 
 export default router;

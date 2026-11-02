@@ -4,8 +4,11 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./components/Footer";
 import { getUser } from "../../auth/auth.api";
+import { getDashboardShell } from "./dashboard.api";
 import { menuForRole } from "./menuConfig";
 import "./dashboard.css";
+
+const EMPTY_SHELL = { notifications: [], badges: {} };
 
 // Vỏ chung cho toàn bộ khu vực /admin/*: Sidebar cố định + Header + nội dung.
 // Các trang nghiệp vụ giữ nguyên nội dung, chỉ được bọc bởi layout này.
@@ -26,10 +29,33 @@ export default function DashboardLayout({ children }) {
     const openSidebar = () => setSidebarState({ open: true, path: location.pathname });
     const closeSidebar = () => setSidebarState({ open: false, path: location.pathname });
 
+    // Thông báo + badge lấy từ DB, dùng chung cho Header và Sidebar.
+    const [shell, setShell] = useState(EMPTY_SHELL);
+
     // Bỏ padding-top 70px của Header public trong lúc ở khu quản trị.
     useEffect(() => {
         document.body.classList.add("admin-shell-active");
         return () => document.body.classList.remove("admin-shell-active");
+    }, []);
+
+    useEffect(() => {
+        let ignore = false;
+
+        const loadShell = async () => {
+            try {
+                const response = await getDashboardShell();
+                if (!ignore && response.success) {
+                    setShell(response.data);
+                }
+            } catch {
+                // Lỗi mạng không ảnh hưởng nội dung trang; giữ badge trống.
+            }
+        };
+
+        loadShell();
+        return () => {
+            ignore = true;
+        };
     }, []);
 
     return (
@@ -41,13 +67,19 @@ export default function DashboardLayout({ children }) {
             {!compact && (
                 <Sidebar
                     groups={groups}
+                    badges={shell.badges}
                     open={sidebarOpen}
                     onClose={closeSidebar}
                 />
             )}
 
             <div className="main">
-                <Header role={role} compact={compact} onMenuClick={openSidebar} />
+                <Header
+                    role={role}
+                    compact={compact}
+                    onMenuClick={openSidebar}
+                    notifications={shell.notifications}
+                />
 
                 <main className="admin-content">{children}</main>
 

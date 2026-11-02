@@ -1995,3 +1995,88 @@ body.admin-shell-active {
         padding: 12px 16px 16px;
     }
 }
+
+/* ===================== Trạng thái tải dữ liệu thật ===================== */
+.dashboard-page .dash-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid color-mix(in srgb, var(--color-danger) 22%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-danger) 7%, #fff);
+    color: var(--color-danger);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.dashboard-page .dash-alert button {
+    flex: none;
+    padding: 6px 12px;
+    border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-danger);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dashboard-page .dash-alert button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.dashboard-page .dash-skeleton {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.dashboard-page .dash-skeleton span {
+    height: 104px;
+    border-radius: 16px;
+    background: linear-gradient(100deg, #eef4fa 30%, #f8fbfe 50%, #eef4fa 70%);
+    background-size: 220% 100%;
+    animation: dash-skeleton 1.2s ease-in-out infinite;
+}
+
+@keyframes dash-skeleton {
+    from {
+        background-position: 120% 0;
+    }
+    to {
+        background-position: -120% 0;
+    }
+}
+
+.dashboard-page.is-loading .main-grid {
+    opacity: 0.55;
+}
+
+/* Nhãn số chỗ còn lại của chuyến sắp khởi hành */
+.dashboard-page .upcoming-seats {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .upcoming-seats.is-low {
+    background: color-mix(in srgb, var(--color-warning) 14%, #fff);
+    color: color-mix(in srgb, var(--color-warning) 70%, #78350f);
+}
+
+.dashboard-page .growth-pill.is-down {
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    color: var(--color-danger);
+}

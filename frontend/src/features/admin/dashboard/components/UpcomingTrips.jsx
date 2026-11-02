@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import defaultImage from "../../../../assets/images/image.png";
 
-// Danh sách chuyến sắp khởi hành.
+// Danh sách chuyến sắp khởi hành (số chỗ còn lại lấy từ tour_departures).
 export default function UpcomingTrips({ trips = [] }) {
     return (
         <article className="dash-card upcoming-card">
@@ -17,24 +18,20 @@ export default function UpcomingTrips({ trips = [] }) {
             <ul className="upcoming-list">
                 {trips.map((trip) => (
                     <li key={trip.id} className={trip.highlight ? "is-highlight" : ""}>
-                        <img src={trip.image} alt={trip.city} loading="lazy" />
+                        <img
+                            src={trip.image || defaultImage}
+                            alt={trip.city}
+                            loading="lazy"
+                        />
                         <div className="upcoming-info">
                             <span>{trip.tag}</span>
                             <strong>{trip.city}</strong>
                             <small>{trip.dates}</small>
                         </div>
                         <div className="upcoming-people">
-                            <div className="avatar-stack">
-                                {trip.people.map((id) => (
-                                    <img
-                                        key={id}
-                                        src={`https://i.pravatar.cc/40?img=${id}`}
-                                        alt=""
-                                        loading="lazy"
-                                    />
-                                ))}
-                                <span>{trip.extra}</span>
-                            </div>
+                            <span className={`upcoming-seats ${trip.seats <= 5 ? "is-low" : ""}`}>
+                                {trip.seats > 0 ? `Còn ${trip.seats} chỗ` : "Hết chỗ"}
+                            </span>
                         </div>
                     </li>
                 ))}

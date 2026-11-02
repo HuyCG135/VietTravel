@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import defaultImage from "../../../../assets/images/image.png";
 
 // Danh sách gói du lịch nổi bật.
 export default function TravelPackages({ packages = [] }) {
@@ -17,7 +18,7 @@ export default function TravelPackages({ packages = [] }) {
             <ul className="package-list">
                 {packages.map((item) => (
                     <li key={item.id}>
-                        <img src={item.image} alt={item.city} loading="lazy" />
+                        <img src={item.image || defaultImage} alt={item.city} loading="lazy" />
                         <div className="package-info">
                             <span className="package-tag">{item.tag}</span>
                             <strong>{item.city}</strong>

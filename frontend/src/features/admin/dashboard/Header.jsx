@@ -15,7 +15,6 @@ import {
 import defaultAvatar from "../../../assets/images/image.png";
 import logoIcon from "../../../assets/images/icon.svg";
 import { getUser, logout } from "../../auth/auth.api";
-import { notifications } from "./data/mockData";
 import { ROLE_LABEL, homeForRole, itemsForRole, pageMeta } from "./menuConfig";
 
 const NOTIFICATION_ICONS = {
@@ -34,7 +33,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("vi-VN", {
 // Header quản trị: tiêu đề trang, tìm kiếm nhanh, thông báo, tài khoản.
 // Không có các tab điều hướng của site khách — menu đã nằm ở Sidebar.
 // compact = role chỉ có 1 mục: không có Sidebar nên Header mang luôn logo.
-export default function Header({ role, onMenuClick, compact = false }) {
+export default function Header({ role, onMenuClick, compact = false, notifications = [] }) {
     const navigate = useNavigate();
     const location = useLocation();
     const user = getUser();
@@ -74,7 +73,7 @@ export default function Header({ role, onMenuClick, compact = false }) {
 
     const roleNotifications = useMemo(
         () => notifications.filter((item) => item.roles.includes(role)),
-        [role],
+        [notifications, role],
     );
     const unreadCount = roleNotifications.filter((item) => !readIds.includes(item.id)).length;
 

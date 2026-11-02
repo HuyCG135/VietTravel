@@ -8,13 +8,12 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-import { TrendingUp } from "lucide-react";
-import { revenueMeta } from "../data/mockData";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
 const numberFormatter = new Intl.NumberFormat("vi-VN");
 
 // Biểu đồ doanh thu 7 ngày, chuyển được giữa doanh thu và số lượt đặt.
-export default function RevenueOverview({ data = [] }) {
+export default function RevenueOverview({ data = [], meta = {} }) {
     const [metric, setMetric] = useState("revenue");
 
     const totalBookings = useMemo(
@@ -23,7 +22,12 @@ export default function RevenueOverview({ data = [] }) {
     );
 
     const isRevenue = metric === "revenue";
-    const valueLabel = isRevenue ? revenueMeta.total : `${numberFormatter.format(totalBookings)} lượt`;
+    const valueLabel = isRevenue
+        ? meta.total || "0 đ"
+        : `${numberFormatter.format(totalBookings)} lượt`;
+    const growth = meta.growth || "0%";
+    const isDown = meta.trend === "down";
+    const period = meta.period || "7 ngày gần nhất";
     const gradientId = `revenue-fill-${metric}`;
 
     return (
@@ -31,7 +35,7 @@ export default function RevenueOverview({ data = [] }) {
             <div className="card-head">
                 <div>
                     <h3 className="card-title">Doanh thu</h3>
-                    <p className="card-subtitle">{revenueMeta.period}</p>
+                    <p className="card-subtitle">{period}</p>
                 </div>
 
                 <div className="segmented" role="tablist" aria-label="Chọn chỉ số biểu đồ">
@@ -58,8 +62,8 @@ export default function RevenueOverview({ data = [] }) {
 
             <div className="revenue-summary">
                 <strong>{valueLabel}</strong>
-                <span className="growth-pill">
-                    <TrendingUp size={13} /> {revenueMeta.growth}
+                <span className={`growth-pill ${isDown ? "is-down" : ""}`}>
+                    {isDown ? <TrendingDown size={13} /> : <TrendingUp size={13} />} {growth}
                 </span>
             </div>
 

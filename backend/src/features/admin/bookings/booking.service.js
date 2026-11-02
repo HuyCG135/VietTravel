@@ -361,3 +361,36 @@ export const updateBookingStatusService = async (id, status) => {
         };
     });
 };
+
+// Ghi nhận hoàn tiền: set payment_status=refunded + refunded_at,
+// lưu các trường bên phụ, đồng tác tài khoản đã duyệt.
+// (không tự đổi ghế tại đây — caller quyết định đã trừ ghế hay chưa).
+export const refundBookingService = async (id, payload) => {
+    const { refundAmount, refundMethod, providerRef, note } = payload || {};
+    const booking = await AdminBooking.findDetailById(id);
+    if (!booking) {
+        throw new Error("Không tìm thấy booking");
+    }
+
+    const now = new Date();
+    const updated = await AdminBooking.refund(
+        id,
+        refundAmount || 0,
+        refundMethod || "chuyen_khoan",
+        providerRef || null,
+        note || null,
+    );
+
+    // Cập nhật cache / log đơn giản ở đây
+    return {
+        id: booking.id,
+        refundAmount: booking.refund_amount || refundAmount || 0,
+        refundMethod: booking.refund_method || refundMethod || "chuyen_khoan",
+        providerRef: booking.refund_provider_ref || providerRef || null,
+        refundedAt: booking.refunded_at || now,
+        note: booking.refund_note || note || null,
+        approvedBy: payload?.approvedBy || null,
+        status: booking.payment_status,
+        updatedAt: updated ? now : null,
+    };
+};

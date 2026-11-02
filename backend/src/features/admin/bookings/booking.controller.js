@@ -6,6 +6,7 @@ import {
     listBookingsService,
     updateBookingStatusService,
 } from "./booking.service.js";
+import { calculateRefund } from "./refund.service.js";
 
 const handleError = (res, error) => {
     // Lỗi nghiệp vụ có status (400/403/404) → trả thẳng message.
@@ -110,6 +111,81 @@ export const updateBookingStatus = async (req, res) => {
         res.json({
             success: true,
             message: "Cập nhật trạng thái booking thành công",
+            data,
+        });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+// GET /api/admin/bookings/:id/refund-info — tính phí phạt / số tiền hoàn dự kiến
+// (chính sách mới: >=15 ngày 10%, 10-14 ngày 50%, 7-9 ngày 70%, <7 ngày 100%).
+export const getRefundInfo = async (req, res) => {
+    try {
+        const booking = await getBookingDetailService(Number(req.params.id));
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy booking" });
+        }
+
+        const info = calculateRefund(booking.departure_date, booking.paid_amount);
+
+        res.json({
+            success: true,
+            data: {
+                bookingId: booking.id,
+                status: booking.status,
+                paymentStatus: booking.payment_status,
+                paidAmount: booking.paid_amount,
+                departureDate: booking.departure_date,
+                daysRemaining: info.daysDiff,
+                penaltyPct: info.penaltyPct,
+                ruleLabel: info.ruleLabel,
+                refundAmount: info.refundAmount,
+                refundedAt: booking.refunded_at || null,
+            },
+        });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+// POST /api/admin/bookings/:id/refund — Admin duyệt hoàn tiền (ghi nhận thủ công).
+// Body: { refundAmount?, refundMethod?, providerRef?, note? }
+// refundAmount: số tiền hoàn thực tế (mặc định tính theo chính sách, không vượt quá paid_amount).
+export const refundBooking = async (req, res) => {
+    try {
+        const bookingId = Number(req.params.id);
+        const booking = await getBookingDetailService(bookingId);
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy booking" });
+        }
+
+        if (booking.status === "cancelled" && booking.payment_status === "refunded") {
+            return res.status(400).json({
+                success: false,
+                message: "Đơn này đã được hoàn tiền trước đó",
+            });
+        }
+
+        const info = calculateRefund(booking.departure_date, booking.paid_amount);
+        const requestedAmount = Number(req.body?.refundAmount);
+        const refundAmount = Number.isFinite(requestedAmount) && requestedAmount > 0
+            ? Math.min(requestedAmount, info.refundAmount)
+            : info.refundAmount;
+
+        const data = await refundBookingService(bookingId, {
+            refundAmount,
+            refundMethod: req.body?.refundMethod || "chuyen_khoan",
+            providerRef: req.body?.providerRef || null,
+            note: req.body?.note || null,
+            approvedBy: req.user.id,
+        });
+
+        res.json({
+            success: true,
+            message: "Đã ghi nhận hoàn tiền",
             data,
         });
     } catch (error) {

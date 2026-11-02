@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import defaultAvatar from "../../../../assets/images/image.png";
 
 // Danh sách tin nhắn / yêu cầu của khách hàng.
 export default function Messages({ items = [] }) {
@@ -22,7 +23,7 @@ export default function Messages({ items = [] }) {
             <ul className="message-list custom-scrollbar">
                 {items.map((item) => (
                     <li key={item.id} className={item.unread ? "is-unread" : ""}>
-                        <img src={item.avatar} alt="" loading="lazy" />
+                        <img src={item.avatar || defaultAvatar} alt="" loading="lazy" />
                         <div className="message-body">
                             <div className="message-top">
                                 <strong>{item.name}</strong>

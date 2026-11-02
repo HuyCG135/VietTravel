@@ -3,7 +3,8 @@ import logoIcon from "../../../assets/images/icon.svg";
 
 // Sidebar quản trị: logo + menu theo role.
 // Thông tin cá nhân đã có trên Header nên đáy Sidebar không lặp lại.
-export default function Sidebar({ groups = [], open, onClose }) {
+// badges: số lượng thật cho từng route (vd { "/admin/bookings": 9 }).
+export default function Sidebar({ groups = [], badges = {}, open, onClose }) {
     return (
         <>
             <button
@@ -29,6 +30,7 @@ export default function Sidebar({ groups = [], open, onClose }) {
                             <ul className="menu-list">
                                 {group.items.map((item) => {
                                     const Icon = item.icon;
+                                    const badge = badges[item.to];
                                     return (
                                         <li key={item.to}>
                                             <NavLink
@@ -41,8 +43,8 @@ export default function Sidebar({ groups = [], open, onClose }) {
                                             >
                                                 <Icon size={18} strokeWidth={2} />
                                                 <span>{item.label}</span>
-                                                {item.badge ? (
-                                                    <em className="menu-badge">{item.badge}</em>
+                                                {badge ? (
+                                                    <em className="menu-badge">{badge}</em>
                                                 ) : null}
                                             </NavLink>
                                         </li>
