@@ -125,7 +125,7 @@ Backend hẹn giờ hủy đơn **đã cọc nhưng quá hạn trả nốt** qua
 cd backend; docker compose up -d redis   # chỉ cần 1 lần / sau khi reboot
 ```
 
-- **Không có rule tự hủy 24h cho đơn chưa cọc.** Đơn `pending + unpaid` giữ chỗ cho tới khi user thanh toán / user hủy / admin hủy.
+- **Không có rule tự hủy 24h cho đơn chưa cọc.** Đơn `pending + unpaid` **không chiếm ghế**; ghế chỉ bị trừ khi khách bắt đầu thanh toán (tạo URL VNPay), tối đa 30 phút.
 - Job `expire-balance` (hẹn đúng `balance_due_at`) + sweep đối soát mỗi 5 phút + lazy-check khi user chạm đơn — cả 3 gọi chung `expireOrCancelIfDue()` (idempotent, chỉ hủy đơn `deposit_paid + confirmed` quá hạn).
 - **Redis chết không làm hỏng nghiệp vụ**: tạo đơn vẫn OK (log warning), sweep + lazy-check lo bù.
 - **Email không gửi lúc tạo đơn**: email xác nhận chỉ gửi sau khi thanh toán thành công (cọc / trả đủ / trả nốt); nhắc trả nốt trước hạn 48h.

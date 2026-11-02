@@ -5,7 +5,7 @@ import "dotenv/config";
 // Quy ước thời gian: tính mốc bằng JS rồi truyền Date xuống DB (không dùng NOW() + INTERVAL).
 //
 // LƯU Ý: KHÔNG còn hạn "24h chưa cọc thì tự hủy". Đơn chưa cọc (pending + unpaid)
-// được giữ chỗ cho tới khi user thanh toán hoặc tự hủy / admin hủy.
+// KHÔNG chiếm ghế; ghế chỉ bị giữ khi khách bắt đầu thanh toán (tối đa 30 phút).
 // Chỉ đơn ĐÃ CỌC mới có hạn trả nốt (balance_due_at) và bị tự hủy khi quá hạn.
 
 // Tỷ lệ cọc mặc định (%)
@@ -26,5 +26,5 @@ export const PAYMENT_URL_TTL_MINUTES = 30;
 // Nhắc trả nốt trước hạn bao nhiêu giờ (job nhắc ở Bước 6)
 export const BALANCE_REMINDER_HOURS = 48;
 
-// Số đơn pending + unpaid tối đa mỗi user được giữ cùng lúc
+// Số đơn pending + unpaid tối đa mỗi user được tạo cùng lúc (chống spam, không giữ ghế)
 export const MAX_UNPAID_BOOKINGS = 3;

@@ -33,14 +33,14 @@ const expireOrCancelIfDue = async (booking) => {
     // Đang có phiên VNPay còn hiệu lực → chưa hủy (A8)
     if (await BookingPayment.hasActivePendingPayment(booking.id)) return booking;
 
-    // Conditional update: chỉ request đầu tiên hủy + trả ghế được,
-    // request song song thấy false sẽ không restore ghế lần 2
+    // Conditional update: chỉ request đầu tiên hủy + nhả ghế được,
+    // request song song thấy false sẽ không nhả ghế lần 2 (nhả ghế idempotent theo seats_held)
     const didCancel = await Booking.cancelIfActive(booking.id, "balance_expired");
     if (didCancel) {
         // Hủy luôn các phiên thanh toán còn treo để khách không trả được URL cũ (A4)
         await BookingPayment.cancelPendingByBooking(booking.id);
-        const totalPax = (booking.adults || 0) + (booking.children || 0);
-        await Booking.restoreSeats(booking.departure_id, totalPax);
+        // Chỉ nhả khi đơn thực sự đang giữ ghế (đã cọc thì chắc chắn có)
+        await Booking.releaseHeldSeats(booking.id);
         return { ...booking, status: "cancelled", cancel_reason: "balance_expired" };
     }
     // Không đổi được → vừa có request khác hủy/đóng tiền, đọc lại DB cho đúng
@@ -59,9 +59,23 @@ export const expireBookingById = async (bookingId) => {
     return expireOrCancelIfDue(booking);
 };
 
-// Sweep gọi định kỳ (mỗi 5 phút): quét các đơn đã cọc nhưng quá hạn trả nốt còn trôi
-// (job mất do Redis rớt / app nghỉ qua hạn...) → trả về số đơn vừa bị hủy
+// Sweep gọi định kỳ (mỗi 5 phút):
+// 1) Nhả ghế của các phiên thanh toán quá hạn (khách bỏ ngang, không còn giữ chỗ).
+// 2) Hủy các đơn đã cọc nhưng quá hạn trả nốt còn trôi (job mất do Redis rớt/app nghỉ).
 export const sweepExpiredBookings = async () => {
+    // 1) Phiên thanh toán quá hạn → đánh dấu expired; nếu đơn vẫn chưa cọc và
+    //    không còn phiên nào hiệu lực thì nhả ghế.
+    const expiredPayments = await BookingPayment.findExpiredPending(new Date());
+    for (const payment of expiredPayments) {
+        await BookingPayment.markExpired(payment.txn_ref);
+
+        const booking = await Booking.getById(payment.booking_id);
+        if (!booking || booking.payment_status !== "unpaid") continue;
+        if (await BookingPayment.hasActivePendingPayment(booking.id)) continue;
+        await Booking.releaseHeldSeats(booking.id);
+    }
+
+    // 2) Hủy đơn đã cọc quá hạn trả nốt
     const dueBookings = await Booking.findExpiredDeposit(new Date());
     let expiredCount = 0;
     for (const b of dueBookings) {
@@ -204,21 +218,47 @@ export const cancelBookingService = async (userId, role, bookingId) => {
         throw createHttpError(403, "Bạn không có quyền hủy booking này");
     }
 
-    if (booking.status !== "pending") {
-        throw createHttpError(400, "Chỉ có thể hủy booking đang chờ xác nhận");
+    // Cho hủy đơn chưa cọc (pending) và đơn đã cọc (deposit_paid + confirmed).
+    // Đơn đã trả đủ (paid) thì không cho hủy — phải xử lý hoàn tiền riêng.
+    const cancellable =
+        booking.status === "pending" ||
+        (booking.status === "confirmed" && booking.payment_status === "deposit_paid");
+    if (!cancellable) {
+        throw createHttpError(400, "Không thể hủy booking ở trạng thái hiện tại");
     }
 
-    await Booking.updateStatus(bookingId, "cancelled");
-
-    // Hoàn trả ghế cho lịch khởi hành
-    const totalPax = (booking.adults || 0) + (booking.children || 0);
-    await Booking.restoreSeats(booking.departure_id, totalPax);
+    const didCancel = await Booking.cancelIfActive(bookingId, "user");
+    if (didCancel) {
+        // Hủy phiên thanh toán còn treo + nhả ghế nếu đơn đang giữ
+        await BookingPayment.cancelPendingByBooking(bookingId);
+        await Booking.releaseHeldSeats(bookingId);
+    }
 };
 
 export const updateStatusService = async (bookingId, status) => {
     const validStatuses = ["pending", "confirmed", "cancelled"];
     if (!validStatuses.includes(status)) {
         throw createHttpError(400, "Trạng thái không hợp lệ. Chỉ chấp nhận: pending, confirmed, cancelled");
+    }
+
+    const booking = await Booking.getById(bookingId);
+    if (!booking) {
+        throw createHttpError(404, "Không tìm thấy booking");
+    }
+
+    // Không cho xác nhận đơn khi chưa thu được đồng nào (rule đã chốt)
+    if (status === "confirmed" && booking.payment_status === "unpaid") {
+        throw createHttpError(400, "Không thể xác nhận đơn chưa thanh toán");
+    }
+
+    if (status === "cancelled") {
+        const didCancel = await Booking.cancelIfActive(bookingId, "admin");
+        if (!didCancel) {
+            throw createHttpError(400, "Không thể hủy booking ở trạng thái hiện tại");
+        }
+        await BookingPayment.cancelPendingByBooking(bookingId);
+        await Booking.releaseHeldSeats(bookingId);
+        return;
     }
 
     const updated = await Booking.updateStatus(bookingId, status);
@@ -228,6 +268,14 @@ export const updateStatusService = async (bookingId, status) => {
 };
 
 export const deleteBookingService = async (bookingId) => {
+    // Đã phát sinh giao dịch thì không xóa — phải giữ lịch sử để đối soát (A15)
+    if (await BookingPayment.existsByBooking(bookingId)) {
+        throw createHttpError(
+            400,
+            "Booking đã có giao dịch thanh toán, không thể xóa. Hãy hủy đơn để giữ lịch sử đối soát.",
+        );
+    }
+
     const deleted = await Booking.delete(bookingId);
     if (!deleted) {
         throw createHttpError(404, "Không tìm thấy booking");

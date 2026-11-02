@@ -134,11 +134,13 @@ CREATE TABLE bookings (
     deposit_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     balance_due_at DATETIME DEFAULT NULL,
+    -- Đơn có đang thực sự giữ ghế hay không (ghế chỉ bị trừ khi bắt đầu thanh toán)
+    seats_held TINYINT(1) NOT NULL DEFAULT 0,
 
     payment_status ENUM('unpaid','deposit_paid','paid','refunded') NOT NULL DEFAULT 'unpaid',
     status ENUM('pending','confirmed','cancelled') NOT NULL DEFAULT 'pending',
 
-    cancel_reason ENUM('deposit_expired','balance_expired','user','admin') DEFAULT NULL,
+    cancel_reason ENUM('balance_expired','user','admin') DEFAULT NULL,
     cancelled_at DATETIME DEFAULT NULL,
 
     contact_name VARCHAR(255) NOT NULL,

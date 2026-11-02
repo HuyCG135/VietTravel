@@ -90,45 +90,4 @@ const sendResetPasswordEmail = async ({ email, resetUrl }) => {
     return { sent: true };
 };
 
-const sendBookingPaymentEmail = async ({ email, bookingId, amount, paymentUrl }) => {
-    const prettyAmount = Number(amount || 0).toLocaleString("vi-VN") + " ₫";
-
-    if (!isMailConfigured()) {
-        console.warn(`[MAIL] Chưa cấu hình SMTP. Link thanh toán đơn #MB${bookingId} cho ${email}: ${paymentUrl}`);
-        return { sent: false };
-    }
-
-    const transporter = getTransporter();
-    const from = process.env.SMTP_FROM || process.env.SMTP_USER;
-
-    await transporter.sendMail({
-        from,
-        to: email,
-        subject: `Thanh toán đơn đặt tour #MB${bookingId} - Vietravel`,
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #222;">
-                <h2 style="margin-bottom: 8px;">Thanh toán đơn đặt tour #MB${bookingId}</h2>
-                <p>Cảm ơn bạn đã đặt tour tại Vietravel!</p>
-                <p style="margin: 12px 0 4px;">
-                    Số tiền cần thanh toán:
-                    <strong style="font-size: 18px; color: #2563eb;">${prettyAmount}</strong>
-                </p>
-                <a href="${paymentUrl}"
-                    style="display: inline-block; padding: 14px 28px; margin: 16px 0;
-                            background-color: #2563eb; color: #fff; text-decoration: none;
-                            border-radius: 6px; font-weight: 600; font-size: 16px;">
-                    Thanh toán ngay
-                </a>
-                <p style="color: #666; font-size: 14px;">Hoặc copy link sau vào trình duyệt:</p>
-                <p style="font-size: 13px; color: #888; word-break: break-all;">${paymentUrl}</p>
-                <p style="margin-top: 16px; font-size: 13px; color: #999;">
-                    Link thanh toán có hiệu lực trong 7 ngày. Nếu bạn đã thanh toán, vui lòng bỏ qua email này.
-                </p>
-            </div>
-        `,
-    });
-
-    return { sent: true };
-};
-
-export { sendVerificationEmail, sendResetPasswordEmail, sendBookingPaymentEmail, isMailConfigured };
+export { sendVerificationEmail, sendResetPasswordEmail, isMailConfigured };

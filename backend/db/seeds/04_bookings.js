@@ -241,6 +241,7 @@ export async function seed(knex) {
             deposit_amount: depositAmount,
             paid_amount: paidAmount,
             balance_due_at: balanceDueAt,
+            seats_held: status !== "cancelled" && (paymentStatus === "deposit_paid" || paymentStatus === "paid"),
             payment_status: paymentStatus,
             status,
             cancel_reason: cancelReason,
@@ -283,6 +284,7 @@ export async function seed(knex) {
             deposit_amount: booking.deposit_amount,
             paid_amount: booking.paid_amount,
             balance_due_at: booking.balance_due_at,
+            seats_held: booking.seats_held,
             payment_status: booking.payment_status,
             status: booking.status,
             cancel_reason: booking.cancel_reason,
@@ -328,10 +330,12 @@ export async function seed(knex) {
         await knex("passengers").insert(passengerRows);
     }
 
-    // ===== Cập nhật chỗ trống của lịch khởi hành theo số khách đã đặt (không tính đơn đã hủy) =====
+    // ===== Cập nhật chỗ trống của lịch khởi hành =====
+    // Chỉ đơn thực sự giữ ghế (đã cọc / đã trả đủ, chưa hủy) mới chiếm chỗ.
+    // Đơn pending + unpaid KHÔNG trừ ghế (khách chưa bắt đầu thanh toán).
     const soldFinal = new Map();
     for (const booking of saved) {
-        if (booking.status === "cancelled") continue;
+        if (!booking.seats_held) continue;
         soldFinal.set(
             booking.departure_id,
             (soldFinal.get(booking.departure_id) || 0) + booking.adults + booking.children,

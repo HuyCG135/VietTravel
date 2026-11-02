@@ -138,7 +138,7 @@ class BookingPayment {
         return updated > 0;
     }
 
-    // Có phiên thanh toán nào còn hiệu lực không (dùng để chặn auto-hủy đơn — A8)
+    // Có phiên thanh toán nào còn hiệu lực không (dùng để chặn auto-hủy đơn / nhả ghế — A8)
     static async hasActivePendingPayment(bookingId, now = new Date(), trx = null) {
         const row = await q(trx)("booking_payments")
             .where("booking_id", bookingId)
@@ -146,6 +146,14 @@ class BookingPayment {
             .where("expires_at", ">", now)
             .first("id");
         return Boolean(row);
+    }
+
+    // Các phiên pending đã quá expires_at (dùng cho sweep nhả ghế phiên bỏ ngang)
+    static async findExpiredPending(now = new Date(), trx = null) {
+        return q(trx)("booking_payments")
+            .where("status", "pending")
+            .whereNotNull("expires_at")
+            .where("expires_at", "<=", now);
     }
 
     // Đơn đã từng phát sinh giao dịch chưa (chặn xóa booking — A15)

@@ -60,23 +60,7 @@ class Booking {
             .first();
     }
 
-    static async create(bookingData) {
-        const data = {
-            ...bookingData,
-            adults: bookingData.adults ?? 1,
-            children: bookingData.children ?? 0,
-            total_price: bookingData.total_price ?? 0,
-            payment_status: bookingData.payment_status ?? "unpaid",
-            status: bookingData.status ?? "pending",
-            note: bookingData.note ?? null,
-            created_at: new Date(),
-            updated_at: new Date(),
-        };
-        const [insertId] = await db("bookings").insert(data);
-        return insertId;
-    }
-
-    // Tạo booking + passengers + trừ ghế trong cùng transaction
+    // Tạo booking + passengers (KHÔNG trừ ghế — ghế chỉ giữ khi bắt đầu thanh toán).
     // deposit_percent/deposit_amount là snapshot tại thời điểm đặt (không tính lại sau này).
     static async createWithPassengers({
         user_id,
@@ -106,6 +90,7 @@ class Booking {
                 paid_amount: 0,
                 payment_status: "unpaid",
                 status: "pending",
+                seats_held: false,
                 contact_name,
                 contact_phone,
                 contact_email,
@@ -127,18 +112,6 @@ class Booking {
                     }))
                 );
             }
-
-            await trx("tour_departures")
-                .where("id", departure_id)
-                .decrement("seats_available", adults + children);
-
-            // A16: giữ status khớp với số ghế — hết ghế thì chuyển 'open' -> 'full'
-            // (chỉ đụng 'open', không tự mở lại chuyến admin đã 'closed')
-            await trx("tour_departures")
-                .where("id", departure_id)
-                .where("status", "open")
-                .where("seats_available", "<=", 0)
-                .update({ status: "full" });
 
             return bookingId;
         });
@@ -244,7 +217,7 @@ class Booking {
 
     // Hủy booking nếu chưa cancelled/paid — trả về true nếu VỪA đổi trạng thái thành công.
     // Dùng cho lazy-check/sweep/job: 2 request song song chỉ 1 bên trả lời true → không restore ghế 2 lần.
-    // reason: 'deposit_expired' | 'balance_expired' | 'user' | 'admin'
+    // reason: 'balance_expired' | 'user' | 'admin'
     static async cancelIfActive(id, reason = null) {
         const patch = {
             status: "cancelled",
@@ -261,20 +234,75 @@ class Booking {
         return updated > 0;
     }
 
-    // Hoàn trả ghế khi hủy booking (A16: ghế về > 0 thì mở lại chuyến nếu đang 'full').
-    static async restoreSeats(departureId, paxCount) {
+    // ============ Giữ ghế theo phiên thanh toán (2026-11-02) ============
+    // Ghế chỉ bị trừ khi khách BẮT ĐẦU thanh toán (tạo URL VNPay), không trừ lúc đặt.
+    // - Chạy trong transaction + khóa row chuyến để 2 khách không cùng trừ 1 ghế cuối.
+    // - Đã giữ rồi (seats_held = 1) → true, không trừ thêm (idempotent).
+    // - Không đủ ghế → false (service trả 409, KHÔNG tạo URL để khỏi thu tiền oan).
+    static async holdSeats(bookingId, departureId, paxCount) {
+        const pax = Number(paxCount) || 0;
+        if (pax <= 0) return true;
+
         return db.transaction(async (trx) => {
-            const updated = await trx("tour_departures")
+            // Khóa theo thứ tự booking → departure, giống releaseHeldSeats (tránh deadlock)
+            const booking = await trx("bookings").where("id", bookingId).forUpdate().first();
+            if (!booking) return false;
+            if (booking.seats_held) return true;
+
+            const departure = await trx("tour_departures")
                 .where("id", departureId)
-                .increment("seats_available", paxCount);
+                .forUpdate()
+                .first();
+            if (!departure) return false;
+            if (Number(departure.seats_available) < pax) return false;
 
             await trx("tour_departures")
                 .where("id", departureId)
-                .where("status", "full")
-                .where("seats_available", ">", 0)
-                .update({ status: "open" });
+                .decrement("seats_available", pax);
 
-            return updated;
+            // Hết ghế thì chuyển 'open' -> 'full' (không đụng chuyến admin đã 'closed')
+            await trx("tour_departures")
+                .where("id", departureId)
+                .where("status", "open")
+                .where("seats_available", "<=", 0)
+                .update({ status: "full" });
+
+            await trx("bookings")
+                .where("id", bookingId)
+                .update({ seats_held: true, updated_at: new Date() });
+
+            return true;
+        });
+    }
+
+    // Nhả ghế đang giữ (hủy đơn / phiên thanh toán hết hạn).
+    // Idempotent: chỉ nhả khi seats_held = 1 → gọi nhiều lần không cộng ghế 2 lần.
+    static async releaseHeldSeats(bookingId) {
+        return db.transaction(async (trx) => {
+            const booking = await trx("bookings").where("id", bookingId).forUpdate().first();
+            if (!booking || !booking.seats_held) return false;
+
+            const pax = Number(booking.adults || 0) + Number(booking.children || 0);
+
+            // Đổi cờ trước để request song song thấy seats_held = 0 và dừng lại
+            await trx("bookings")
+                .where("id", bookingId)
+                .update({ seats_held: false, updated_at: new Date() });
+
+            if (pax > 0) {
+                // LEAST(...) để không vượt seats_total nếu dữ liệu đã lệch
+                await trx.raw(
+                    "UPDATE tour_departures SET seats_available = LEAST(seats_total, seats_available + ?) WHERE id = ?",
+                    [pax, booking.departure_id],
+                );
+                await trx("tour_departures")
+                    .where("id", booking.departure_id)
+                    .where("status", "full")
+                    .where("seats_available", ">", 0)
+                    .update({ status: "open" });
+            }
+
+            return true;
         });
     }
 
@@ -287,7 +315,7 @@ class Booking {
             .where("balance_due_at", "<", balanceDueBefore);
     }
 
-    // Số đơn đang giữ chỗ (pending + unpaid) của 1 user (A23).
+    // Số đơn chưa cọc (pending + unpaid) của 1 user (A23) — chỉ để chống spam, không giữ ghế.
     // Không còn lọc theo hạn thanh toán: đơn chưa cọc không tự hết hạn nữa.
     static async countActiveUnpaidByUser(userId) {
         const row = await db("bookings")
