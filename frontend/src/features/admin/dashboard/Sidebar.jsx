@@ -1,25 +1,9 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Rocket } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import logoIcon from "../../../assets/images/icon.svg";
-import defaultAvatar from "../../../assets/images/image.png";
-import { logout } from "../../auth/auth.api";
-import { useToast } from "../../../context/ToastContext";
-import { ROLE_LABEL } from "./menuConfig";
 
-// Sidebar quản trị: logo + menu theo role + banner nâng cấp + tài khoản.
-export default function Sidebar({ groups = [], user, role, open, onClose }) {
-    const navigate = useNavigate();
-    const toast = useToast();
-
-    const handleLogout = () => {
-        logout();
-        navigate("/login", { replace: true });
-    };
-
-    const handleUpgrade = () => {
-        toast.info("Gói nâng cấp đang được phát triển. Vui lòng liên hệ quản trị viên!");
-    };
-
+// Sidebar quản trị: logo + menu theo role.
+// Thông tin cá nhân đã có trên Header nên đáy Sidebar không lặp lại.
+export default function Sidebar({ groups = [], open, onClose }) {
     return (
         <>
             <button
@@ -68,37 +52,6 @@ export default function Sidebar({ groups = [], user, role, open, onClose }) {
                         </div>
                     ))}
                 </nav>
-
-                <div className="upgrade-card">
-                    <span className="upgrade-icon">
-                        <Rocket size={16} />
-                    </span>
-                    <p>
-                        Nâng cấp trải nghiệm
-                        <br />
-                        <strong>Vietravel Admin!</strong>
-                    </p>
-                    <button type="button" onClick={handleUpgrade}>
-                        Nâng cấp ngay
-                    </button>
-                </div>
-
-                <div className="sidebar-user">
-                    <img src={defaultAvatar} alt="" width="36" height="36" />
-                    <div className="sidebar-user-info">
-                        <strong>{user?.fullname || user?.email || "Nhân viên"}</strong>
-                        <small>{ROLE_LABEL[role] || "Nhân viên"}</small>
-                    </div>
-                    <button
-                        type="button"
-                        className="sidebar-logout"
-                        onClick={handleLogout}
-                        title="Đăng xuất"
-                        aria-label="Đăng xuất"
-                    >
-                        <LogOut size={17} />
-                    </button>
-                </div>
             </aside>
         </>
     );

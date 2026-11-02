@@ -41,8 +41,6 @@ export default function DashboardLayout({ children }) {
             {!compact && (
                 <Sidebar
                     groups={groups}
-                    user={user}
-                    role={role}
                     open={sidebarOpen}
                     onClose={closeSidebar}
                 />
