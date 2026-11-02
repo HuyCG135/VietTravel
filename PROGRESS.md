@@ -675,6 +675,22 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Cập nhật toàn bộ bộ lọc trạng thái booking (Loại bỏ "Chờ xử lý")
+
+**Đã làm:**
+
+- [x] **Bộ lọc Admin (`BookingsTable.jsx`):** Bỏ tùy chọn "Chờ xử lý" (`pending`). Bộ lọc hiện tại gồm: **Tất cả trạng thái**, **Đã xác nhận** (`confirmed`), **Yêu cầu hủy** (`cancel_requested`), **Đã hủy** (`cancelled`).
+- [x] **Các tab bộ lọc User (`BookingHistory.jsx`):** Bỏ tab "Đang chờ" (`pending`). Chuyển thành 4 tab chuẩn: **Tất cả**, **Đã xác nhận**, **Yêu cầu hủy**, **Đã hủy**.
+- [x] **Bảng Booking gần đây (`RecentBookings.jsx`):** Cập nhật nhãn trạng thái đồng bộ, thay thế `pending` bằng `cancel_requested` ("Yêu cầu hủy").
+- [x] Chạy `npm run lint` pass 100%.
+
+**File liên quan:**
+
+- Sửa:
+  - `frontend/src/features/admin/bookings/components/BookingsTable.jsx`
+  - `frontend/src/features/user/bookings/BookingHistory.jsx`
+  - `frontend/src/features/admin/dashboard/components/RecentBookings.jsx`
+
 ### 2026-11-03 — Cập nhật dữ liệu mẫu (Seed) chuẩn nghiệp vụ mới
 
 **Đã làm:**

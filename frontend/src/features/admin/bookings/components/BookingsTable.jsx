@@ -198,10 +198,9 @@ export default function BookingsTable() {
                         aria-label="Lọc trạng thái booking"
                     >
                         <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ xử lý</option>
                         <option value="confirmed">Đã xác nhận</option>
-                        <option value="cancelled">Đã hủy</option>
                         <option value="cancel_requested">Yêu cầu hủy</option>
+                        <option value="cancelled">Đã hủy</option>
                     </select>
                 </div>
             </div>

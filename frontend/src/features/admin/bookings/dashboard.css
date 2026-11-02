@@ -615,6 +615,12 @@ button.btn-primary:hover {
     color: var(--color-danger);
 }
 
+.status-cancel_requested {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
 .bookings-footer {
     display: flex;
     flex-wrap: wrap;

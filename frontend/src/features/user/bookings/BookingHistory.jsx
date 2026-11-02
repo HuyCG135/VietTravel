@@ -10,8 +10,8 @@ const PAGE_SIZE = 5;
 
 const TABS = [
     { id: "all", label: "Tất cả" },
-    { id: "pending", label: "Đang chờ" },
     { id: "confirmed", label: "Đã xác nhận" },
+    { id: "cancel_requested", label: "Yêu cầu hủy" },
     { id: "cancelled", label: "Đã hủy" },
 ];
 

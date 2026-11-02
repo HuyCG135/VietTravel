@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const STATUS_META = {
     confirmed: { label: "Đã xác nhận", className: "confirmed" },
-    pending: { label: "Chờ xử lý", className: "pending" },
+    cancel_requested: { label: "Yêu cầu hủy", className: "pending" },
     cancelled: { label: "Đã hủy", className: "cancelled" },
 };
 

@@ -2,10 +2,9 @@
 // Tách riêng khỏi common.jsx để tránh react-refresh/only-export-components.
 
 export const STATUS_META = {
-    pending: { label: "Chờ xử lý", chip: "bg-amber-100 text-amber-700", dot: "bg-amber-500" },
     confirmed: { label: "Đã xác nhận", chip: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
     cancelled: { label: "Đã hủy", chip: "bg-red-100 text-red-700", dot: "bg-red-500" },
-    cancel_requested: { label: "Yêu cầu hủy", chip: "bg-rose-100 text-rose-700", dot: "bg-rose-500" },
+    cancel_requested: { label: "Yêu cầu hủy", chip: "bg-amber-100 text-amber-800 border border-amber-300", dot: "bg-amber-500" },
 };
 
 export const PAYMENT_META = {
