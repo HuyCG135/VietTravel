@@ -153,29 +153,6 @@ export default function AdminBookingDetail() {
         <div className="space-y-5">
             <BookingHeader booking={booking} />
 
-            {/* Banner thông báo nếu khách đang yêu cầu hủy */}
-            {booking.status === "cancel_requested" && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-300 bg-rose-50 p-4 sm:p-5 text-rose-900 shadow-xs">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-200 text-rose-700">
-                            <i className="fa-solid fa-triangle-exclamation text-lg" />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-sm sm:text-base">Khách hàng yêu cầu hủy booking này</h4>
-                            <p className="text-xs sm:text-sm text-rose-700">
-                                Đơn đã thanh toán đầy đủ. Vui lòng xem chính sách hoàn tiền và phê duyệt hoặc từ chối.
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setRefundModalOpen(true)}
-                        className="cursor-pointer rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-rose-700"
-                    >
-                        Xử lý yêu cầu hủy
-                    </button>
-                </div>
-            )}
 
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <div className="space-y-5 lg:col-span-2">

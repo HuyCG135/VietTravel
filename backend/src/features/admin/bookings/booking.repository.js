@@ -78,7 +78,7 @@ class AdminBooking {
                 // Format sẵn theo giờ DB để tránh lệch ngày do timezone ở client.
                 db.raw("DATE_FORMAT(d.departure_date, '%d/%m/%Y') as departure_date_text"),
             )
-            .orderBy("b.created_at", "desc")
+            .orderBy("b.updated_at", "desc")
             .orderBy("b.id", "desc")
             .limit(limitNum)
             .offset((pageNum - 1) * limitNum);

@@ -675,6 +675,20 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Cập nhật sắp xếp danh sách booking theo thời gian cập nhật mới nhất
+
+**Đã làm:**
+
+- [x] Đổi thứ tự sắp xếp danh sách booking ở Admin (`AdminBooking.list`) từ `created_at desc` sang `updated_at desc, id desc`.
+- [x] Đổi thứ tự sắp xếp danh sách booking của User (`Booking.getAll` và `Booking.getByUserId`) sang `updated_at desc`.
+- [x] Khi khách hàng vừa đặt đơn mới, thanh toán, hoặc gửi yêu cầu hủy, `updated_at` được cập nhật và booking đó sẽ ngay lập tức được đẩy lên đầu danh sách để Admin/User dễ theo dõi nhất.
+
+**File liên quan:**
+
+- Sửa:
+  - `backend/src/features/admin/bookings/booking.repository.js`
+  - `backend/src/features/booking/booking.repository.js`
+
 ### 2026-11-03 — Quy trình Hủy booking & Hoàn tiền (User yêu cầu & Admin phê duyệt)
 
 **Đã làm:**

@@ -17,7 +17,7 @@ class Booking {
                 "t.price_default as price",
                 "d.departure_date",
             )
-            .orderBy("b.created_at", "desc");
+            .orderBy("b.updated_at", "desc");
     }
 
     static async getByUserId(userId) {
@@ -35,7 +35,7 @@ class Booking {
                 "d.departure_date",
             )
             .where("b.user_id", userId)
-            .orderBy("b.created_at", "desc");
+            .orderBy("b.updated_at", "desc");
     }
 
     static async getById(id, trx = null) {
