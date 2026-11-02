@@ -17,6 +17,12 @@ import db from "../../config/knex.js";
 const q = (trx) => trx || db;
 
 class BookingPayment {
+    // Mở transaction cho service khi cần gộp nhiều bước ghi liên bảng
+    // (booking_payments + bookings) mà không phải import trực tiếp knex ở service.
+    static async transaction(work) {
+        return db.transaction(work);
+    }
+
     // Tạo 1 phiên thanh toán mới (status mặc định pending)
     static async create(
         {
@@ -44,6 +50,41 @@ class BookingPayment {
             updated_at: now,
         });
         return id;
+    }
+
+    // Thay thế phiên pending cũ bằng 1 phiên mới trong CÙNG transaction (A24).
+    // Khóa row booking trước để 2 request song song không cùng tạo 2 phiên pending.
+    static async createReplacingPending({
+        booking_id,
+        type,
+        amount,
+        txn_ref,
+        expires_at = null,
+    }) {
+        return db.transaction(async (trx) => {
+            await trx("bookings").where("id", booking_id).forUpdate().first();
+
+            await trx("booking_payments")
+                .where("booking_id", booking_id)
+                .where("type", type)
+                .where("status", "pending")
+                .update({ status: "cancelled", updated_at: new Date() });
+
+            const now = new Date();
+            const [id] = await trx("booking_payments").insert({
+                booking_id,
+                type,
+                amount,
+                status: "pending",
+                txn_ref,
+                provider_response: null,
+                requested_at: now,
+                expires_at,
+                created_at: now,
+                updated_at: now,
+            });
+            return id;
+        });
     }
 
     static async findById(id, trx = null) {

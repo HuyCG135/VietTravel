@@ -1,7 +1,7 @@
 import { VNPay, ignoreLogger, ProductCode, VnpLocale, dateFormat } from "vnpay";
 import {
     createPaymentUrlService,
-    confirmPaymentService,
+    confirmPaymentByTxnRef,
     getPaymentSummaryService,
     payLaterService,
 } from "./booking.service.js";
@@ -46,13 +46,16 @@ const getVNPayInstance = () => {
 // Tạo URL thanh toán VNPay cho một booking đã tồn tại (unpaid/pending)
 export const createVNPayUrl = async (req, res) => {
     try {
-        const { booking_id } = req.body;
-        const vnpayUrl = await createPaymentUrlService(req, booking_id, getVNPayInstance());
+        const { booking_id, type } = req.body;
+        const result = await createPaymentUrlService(req, booking_id, type, getVNPayInstance());
 
         res.status(201).json({
             success: true,
-            vnpayUrl,
-            bookingId: booking_id,
+            vnpayUrl: result.vnpayUrl,
+            type: result.type,
+            amount: result.amount,
+            bookingId: result.bookingId,
+            expiresAt: result.expiresAt,
         });
     } catch (error) {
         handleError(res, error, "Không thể tạo liên kết thanh toán");
@@ -76,9 +79,16 @@ export const getPaymentSummary = async (req, res) => {
 export const payLater = async (req, res) => {
     try {
         const { booking_id, token } = req.body;
-        const vnpayUrl = await payLaterService(booking_id, token, getVNPayInstance(), req);
+        const result = await payLaterService(booking_id, token, getVNPayInstance(), req);
 
-        res.json({ success: true, vnpayUrl, bookingId: booking_id });
+        res.json({
+            success: true,
+            vnpayUrl: result.vnpayUrl,
+            type: result.type,
+            amount: result.amount,
+            bookingId: result.bookingId,
+            expiresAt: result.expiresAt,
+        });
     } catch (error) {
         handleError(res, error, "Không thể tạo liên kết thanh toán");
     }
@@ -100,22 +110,30 @@ export const vnpayReturn = async (req, res) => {
         return res.redirect(`${frontendBaseUrl}/payment-result?${params.toString()}`);
     };
 
+    const bookingId = extractBookingId(req.query.vnp_TxnRef);
+
     try {
+        // verifyReturnUrl trả vnp_Amount đã chia 100 (VND) — dùng chính object này
+        // để confirm kiểm tra số tiền, KHÔNG dùng req.query thô (đang là *100).
         const verify = getVNPayInstance().verifyReturnUrl(req.query);
 
-        if (!verify.isSuccess) {
-            return redirect("error", "Giao dịch thất bại hoặc bị hủy", null);
+        if (!verify.isVerified) {
+            return redirect("error", "Chữ ký giao dịch không hợp lệ", bookingId);
         }
 
-        const bookingId = extractBookingId(req.query.vnp_TxnRef);
+        if (!verify.isSuccess) {
+            return redirect("error", "Giao dịch thất bại hoặc bị hủy", bookingId);
+        }
+
         if (!bookingId) {
             return redirect("error", "Không tìm thấy mã đơn hàng", null);
         }
 
-        await confirmPaymentService(bookingId);
-        return redirect("success", "", bookingId);
+        // Xác nhận theo txn_ref: xử lý đúng loại (cọc / nốt / toàn bộ) + idempotent
+        const result = await confirmPaymentByTxnRef(req.query.vnp_TxnRef, verify);
+        return redirect("success", "", result.bookingId || bookingId);
     } catch (error) {
         console.error("VNPay Return Error:", error);
-        return redirect("error", "Lỗi máy chủ khi xử lý thanh toán", null);
+        return redirect("error", error.message || "Lỗi máy chủ khi xử lý thanh toán", bookingId);
     }
 };
