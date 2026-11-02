@@ -119,14 +119,16 @@ curl http://localhost:11434/api/generate -d "{\"model\":\"qwen2.5:3b\",\"prompt\
 
 ## Tự hủy đơn hết hạn thanh toán (BullMQ + Redis)
 
-Backend hẹn giờ hủy đơn quá hạn 24h (`PAYMENT_DEADLINE_HOURS`) qua BullMQ — **yêu cầu Redis đang chạy**:
+Backend hẹn giờ hủy đơn **đã cọc nhưng quá hạn trả nốt** qua BullMQ — **yêu cầu Redis đang chạy**:
 
 ```bash
 cd backend; docker compose up -d redis   # chỉ cần 1 lần / sau khi reboot
 ```
 
-- Job "hẹn giờ" (đơn tạo → job chạy sau 24h) + sweep đối soát mỗi 5 phút + lazy-check khi user chạm đơn — cả 3 gọi chung `expireOrCancelIfDue()` (idempotent).
+- **Không có rule tự hủy 24h cho đơn chưa cọc.** Đơn `pending + unpaid` giữ chỗ cho tới khi user thanh toán / user hủy / admin hủy.
+- Job `expire-balance` (hẹn đúng `balance_due_at`) + sweep đối soát mỗi 5 phút + lazy-check khi user chạm đơn — cả 3 gọi chung `expireOrCancelIfDue()` (idempotent, chỉ hủy đơn `deposit_paid + confirmed` quá hạn).
 - **Redis chết không làm hỏng nghiệp vụ**: tạo đơn vẫn OK (log warning), sweep + lazy-check lo bù.
+- **Email không gửi lúc tạo đơn**: email xác nhận chỉ gửi sau khi thanh toán thành công (cọc / trả đủ / trả nốt); nhắc trả nốt trước hạn 48h.
 - Test: `cd backend; node test_bullmq_expire.js` (cần Redis + MySQL).
 
 ## Conventions

@@ -1,10 +1,9 @@
 import Booking from "./booking.repository.js";
+import BookingPayment from "./bookingPayment.repository.js";
 import Tour from "../tour/tour.repository.js";
 import jwt from "jsonwebtoken";
 import { ProductCode, VnpLocale, dateFormat } from "vnpay";
-import { sendBookingPaymentEmail } from "../../shared/mailService.js";
 import { ROLE, BOOKING_MANAGEMENT } from "../../middlewares/auth.js";
-import { scheduleExpireJob } from "../../jobs/expireQueue.js";
 
 const createHttpError = (status, message) => {
     const err = new Error(message);
@@ -12,29 +11,37 @@ const createHttpError = (status, message) => {
     return err;
 };
 
-const PAYMENT_DEADLINE_HOURS = Number(process.env.PAYMENT_DEADLINE_HOURS) || 24;
-
-const isPastPaymentDeadline = (booking) => {
-    if (!booking) return false;
-    const createdAt = booking.created_at || booking.createdAt;
-    if (!createdAt) return false;
-    const deadlineMs = new Date(createdAt).getTime() + PAYMENT_DEADLINE_HOURS * 60 * 60 * 1000;
-    return Date.now() > deadlineMs;
-};
-
+// ============ Hết hạn thanh toán ============
+// Sau khi bỏ rule "24h chưa cọc thì tự hủy", chỉ còn 1 nhánh tự hủy:
+// đơn ĐÃ CỌC (deposit_paid + confirmed) mà quá balance_due_at → hủy, mất cọc.
+// Đơn chưa cọc (pending + unpaid) chỉ bị hủy khi user/admin hủy tay.
 const expireOrCancelIfDue = async (booking) => {
-    // Đã đóng tiền / confirmed / đã hủy trước đó → giữ nguyên (idempotent)
-    if (!booking || booking.payment_status === "paid") return booking;
-    if (booking.status !== "pending") return booking;
-    if (!isPastPaymentDeadline(booking)) return booking;
+    // Đã hủy / đã trả đủ → không xử lý (idempotent)
+    if (!booking || booking.status === "cancelled" || booking.payment_status === "paid") {
+        return booking;
+    }
 
-    // Quá hạn: conditional update — chỉ request đầu tiên hủy + trả ghế được,
+    // Chỉ đơn đã cọc mới có hạn trả nốt
+    if (booking.payment_status !== "deposit_paid" || booking.status !== "confirmed") {
+        return booking;
+    }
+    if (!booking.balance_due_at) return booking;
+
+    const balanceDueMs = new Date(booking.balance_due_at).getTime();
+    if (!Number.isFinite(balanceDueMs) || Date.now() <= balanceDueMs) return booking;
+
+    // Đang có phiên VNPay còn hiệu lực → chưa hủy (A8)
+    if (await BookingPayment.hasActivePendingPayment(booking.id)) return booking;
+
+    // Conditional update: chỉ request đầu tiên hủy + trả ghế được,
     // request song song thấy false sẽ không restore ghế lần 2
-    const didCancel = await Booking.cancelIfActive(booking.id);
+    const didCancel = await Booking.cancelIfActive(booking.id, "balance_expired");
     if (didCancel) {
+        // Hủy luôn các phiên thanh toán còn treo để khách không trả được URL cũ (A4)
+        await BookingPayment.cancelPendingByBooking(booking.id);
         const totalPax = (booking.adults || 0) + (booking.children || 0);
         await Booking.restoreSeats(booking.departure_id, totalPax);
-        return { ...booking, status: "cancelled" };
+        return { ...booking, status: "cancelled", cancel_reason: "balance_expired" };
     }
     // Không đổi được → vừa có request khác hủy/đóng tiền, đọc lại DB cho đúng
     const fresh = await Booking.getById(booking.id);
@@ -45,18 +52,17 @@ const expireOrCancelIfDue = async (booking) => {
 // Cả hai chỉ "gói" lại expireOrCancelIfDue() ở trên: cùng 1 quy tắc idempotent,
 // nên chạy trùng với lazy-check (user chạm đơn) cũng không hủy lặp / trả ghế 2 lần.
 
-// Worker gọi khi job "expire-booking" đến hạn: hủy 1 đơn nếu đúng điều kiện
+// Worker gọi khi job "expire-balance" đến hạn: hủy 1 đơn nếu đúng điều kiện
 export const expireBookingById = async (bookingId) => {
     const booking = await Booking.getById(bookingId);
     if (!booking) return null;
     return expireOrCancelIfDue(booking);
 };
 
-// Sweep gọi định kỳ (mỗi 5 phút): quét các đơn pending+unpaid quá hạn còn trôi
+// Sweep gọi định kỳ (mỗi 5 phút): quét các đơn đã cọc nhưng quá hạn trả nốt còn trôi
 // (job mất do Redis rớt / app nghỉ qua hạn...) → trả về số đơn vừa bị hủy
 export const sweepExpiredBookings = async () => {
-    const deadlineAt = new Date(Date.now() - PAYMENT_DEADLINE_HOURS * 60 * 60 * 1000);
-    const dueBookings = await Booking.findExpiredUnpaid(deadlineAt);
+    const dueBookings = await Booking.findExpiredDeposit(new Date());
     let expiredCount = 0;
     for (const b of dueBookings) {
         const result = await expireOrCancelIfDue(b);
@@ -142,29 +148,8 @@ export const createBookingService = async (userId, role, payload) => {
         passengers,
     });
 
-    // Gửi email kèm link thanh toán (thanh toán ngay hoặc thanh toán sau từ email).
-    // Gửi bất đồng bộ (fire-and-forget) để không làm chậm việc tạo đơn; lỗi gửi KHÔNG fail đơn.
-    try {
-        const token = jwt.sign(
-            { bookingId, purpose: "booking_payment" },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" },
-        );
-        const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-        const paymentUrl = `${baseUrl}/payment/${bookingId}?token=${token}`;
-        sendBookingPaymentEmail({
-            email: contact_email.trim(),
-            bookingId,
-            amount: total_price,
-            paymentUrl,
-        }).catch((err) => console.error("Gửi email thanh toán thất bại (không ảnh hưởng đơn đặt tour):", err.message));
-    } catch (err) {
-        console.error("Không tạo được link thanh toán (không ảnh hưởng đơn đặt tour):", err.message);
-    }
-
-    // Hẹn giờ tự hủy khi quá hạn thanh toán (BullMQ + Redis) — fire-and-forget:
-    // scheduleExpireJob đã tự bọc lỗi, Redis chết cũng không ảnh hưởng đơn đặt tour
-    scheduleExpireJob(bookingId);
+    // KHÔNG gửi email tại thời điểm tạo đơn và KHÔNG hẹn job tự hủy đơn chưa cọc.
+    // Email xác nhận chỉ gửi sau khi thanh toán thành công (cọc / trả đủ / trả nốt).
 
     return {
         id: bookingId,
@@ -318,10 +303,10 @@ export const createPaymentUrlService = async (req, bookingId, vnpay) => {
         throw createHttpError(404, "Không tìm thấy booking");
     }
 
-    // Lazy-check hết hạn: vừa bị hủy (tự hết hạn hoặc request khác) → chặn thanh toán
+    // Lazy-check hết hạn: đơn đã cọc quá hạn trả nốt vừa bị hủy → chặn thanh toán
     booking = await expireOrCancelIfDue(booking);
     if (booking.status === "cancelled") {
-        throw createHttpError(400, "Đơn đã hết hạn thanh toán, vui lòng đặt lại");
+        throw createHttpError(400, "Đơn đã bị hủy, vui lòng đặt lại");
     }
 
     // Kiểm tra quyền sở hữu
@@ -382,7 +367,7 @@ export const payLaterService = async (bookingId, token, vnpay, req) => {
     // Lazy-check hết hạn → chặn
     booking = await expireOrCancelIfDue(booking);
     if (booking.status === "cancelled") {
-        throw createHttpError(400, "Đơn đã hết hạn thanh toán, vui lòng đặt lại");
+        throw createHttpError(400, "Đơn đã bị hủy, vui lòng đặt lại");
     }
 
     if (booking.payment_status === "paid") {

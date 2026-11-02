@@ -2,32 +2,34 @@ import { Worker } from "bullmq";
 import { queue, connection, closeExpireQueue, logRedisError } from "./expireQueue.js";
 import { expireBookingById, sweepExpiredBookings } from "../features/booking/booking.service.js";
 
-// ============ Worker + Sweep cho việc tự hủy đơn hết hạn ============
-// LỚP 1: job "expire-booking" hẹn giờ đúng 24h kể từ lúc tạo đơn (do expireQueue.js đặt).
+// ============ Worker + Sweep cho việc tự hủy đơn QUÁ HẠN TRẢ NỐT ============
+// LỚP 1: job "expire-balance" hẹn giờ đúng balance_due_at (do expireQueue.js đặt sau khi cọc).
 // LỚP 2: sweep chạy mỗi 5 phút — đối soát bắt đơn trôi (job mất do Redis rớt/app nghỉ).
-// LỚP 3: lazy-check trong booking.service.js khi user chạm đơn (giữ nguyên, không đụng).
+// LỚP 3: lazy-check trong booking.service.js khi user chạm đơn.
 // Cả 3 cùng gọi expireOrCancelIfDue() → chạy trùng nhau vẫn idempotent.
+//
+// KHÔNG còn nhánh "24h chưa cọc thì hủy": đơn pending + unpaid không tự hết hạn.
 
 let worker = null;
 
 // Xử lý từng job trong queue
 const processJob = async (job) => {
     if (job.name === "sweep") {
-        // Job lặp của scheduler: quét toàn bộ đơn quá hạn còn trôi trong DB
+        // Job lặp của scheduler: quét toàn bộ đơn quá hạn trả nốt còn trôi trong DB
         const expired = await sweepExpiredBookings();
         if (expired > 0) {
-            console.log(`[Sweep] Phát hiện & hủy ${expired} đơn hết hạn thanh toán`);
+            console.log(`[Sweep] Phát hiện & hủy ${expired} đơn quá hạn trả nốt`);
         }
         return;
     }
 
-    // job.name === "expire-booking": job hẹn giờ cho đúng 1 đơn
+    // job.name === "expire-balance": job hẹn giờ cho đúng 1 đơn
     const { bookingId } = job.data;
     const booking = await expireBookingById(bookingId);
     if (booking?.status === "cancelled") {
-        console.log(`[Job] Hết hạn thanh toán → tự hủy booking #${bookingId}, ghế đã hoàn trả`);
+        console.log(`[Job] Quá hạn trả nốt → tự hủy booking #${bookingId}, ghế đã hoàn trả`);
     }
-    // Đơn đã đóng tiền/hủy trước đó → expireOrCancelIfDue return sớm, không làm gì (idempotent)
+    // Đơn đã trả đủ / hủy trước đó → expireOrCancelIfDue return sớm, không làm gì (idempotent)
 };
 
 export const startExpireJobs = async () => {
@@ -52,7 +54,7 @@ export const startExpireJobs = async () => {
     });
     worker.on("error", (err) => logRedisError("worker", err));
 
-    console.log(`[Jobs] Worker tự hủy đơn hết hạn đã chạy (sweep mỗi 5 phút, hạn ${process.env.PAYMENT_DEADLINE_HOURS || 24}h)`);
+    console.log("[Jobs] Worker hủy đơn quá hạn trả nốt đã chạy (sweep mỗi 5 phút)");
 };
 
 // Graceful shutdown: đóng worker + queue trước khi thoát để job dở dang
