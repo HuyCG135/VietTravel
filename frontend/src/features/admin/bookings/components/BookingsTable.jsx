@@ -253,11 +253,29 @@ export default function BookingsTable() {
                                         <td>{row.package}</td>
                                         <td>{row.duration}</td>
                                         <td>{row.date}</td>
-                                        <td>{priceFormatter.format(row.price)} đ</td>
                                         <td>
-                                            <span className={`status-badge status-${String(row.status).toLowerCase()}`}>
-                                                {row.status_label || row.status}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-foreground">
+                                                    {priceFormatter.format(row.price)} đ
+                                                </span>
+                                                {row.payment_status === "deposit_paid" && (
+                                                    <span className="text-[11px] text-sky-700 font-medium">
+                                                        Đã cọc: {priceFormatter.format(row.paid_amount || row.deposit_amount)} đ
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="flex flex-col gap-1 items-start">
+                                                <span className={`status-badge status-${String(row.status).toLowerCase()}`}>
+                                                    {row.status_label || row.status}
+                                                </span>
+                                                {row.payment_status === "deposit_paid" && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-100 text-sky-800">
+                                                        Đã cọc (30%)
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
