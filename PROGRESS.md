@@ -763,6 +763,37 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+
+---
+
+### 2026-11-03 — Hoàn thiện Cẩm nang Vấn đáp & Kiến trúc dự án (van_dap_viettour.html)
+
+**Đã làm:**
+
+- [x] Tạo và nâng cấp toàn diện tài liệu bảo vệ đồ án `van_dap_viettour.html` (đồng bộ tại root và `docs/van_dap_viettour.html`).
+- [x] Bổ sung phần **Kiến trúc & Luồng Code Tracing (Request Lifecycle)**: bảng tra cứu Feature File Map chi tiết, accordion tương tác mô phỏng từng bước từ UI -> API -> Route -> Middleware -> Controller -> Service -> Repository -> Knex Transaction -> DB.
+- [x] Bổ sung phân tích chuyên sâu **Thống kê Tổng quan Admin (Dashboard Analytics Flow)**:
+  - Công thức tính 3 KPI (Tổng booking, Khách hàng, Doanh thu), sparkline 12 tháng rolling zero-fill.
+  - Công thức tính % thay đổi chu kỳ 30 ngày `percentChange` kèm guard chia cho 0.
+  - Biểu đồ Doanh thu 7 ngày nhóm theo thứ trong tuần, quy đổi đơn vị `formatMoney` thông minh.
+  - Biểu đồ Trips Overview (Chuyến đi hoàn thành / Đã hủy) hỗ trợ 4 mốc thời gian (`7d`, `30d`, `3m`, `12m`) kèm thuật toán **Zero-Fill** chống gãy biểu đồ.
+  - Xếp hạng Top Packages theo % thị phần và cơ chế thông báo Header Badges.
+- [x] Làm rõ luồng **Quản lý Booking phía Admin & Quy trình Hoàn tiền (Refund Lifecycle)**:
+  - Danh sách sắp xếp ưu tiên `orderBy('b.updated_at', 'desc')`.
+  - Bộ lọc trạng thái chuẩn hóa: Đã xác nhận (`confirmed`), Yêu cầu hủy (`cancel_requested`), Đã hủy (`cancelled`).
+  - Quy trình hoàn tiền: tính ngày theo múi giờ chuẩn, hiển thị modal chi tiết mức phạt, duyệt hủy và nhả ghế tự động bằng Database Transaction (ACID).
+  - Cơ chế tự hủy đơn hết hạn thanh toán bằng hàng đợi phân tán BullMQ + Redis (Scheduled Job, Sweep 5 phút, Lazy-check fallback).
+- [x] Bổ sung 5 kịch bản câu hỏi phản biện giám khảo hay hỏi nhất kèm câu trả lời chuẩn xác.
+
+**File liên quan:**
+
+- Thêm / Sửa: `van_dap_viettour.html`, `docs/van_dap_viettour.html`
+
+**Kiểm tra:**
+
+- Mở trực tiếp file HTML trên trình duyệt, các liên kết sidebar, hiệu ứng accordion và responsive hoạt động mượt mà.
+
+
 ## 8. Mẫu ghi cho lần cập nhật sau
 
 ```md

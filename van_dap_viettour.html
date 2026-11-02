@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cẩm Nang Vấn Đáp 5 Module Trọng Tâm - VietTour</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Mermaid.js for beautiful diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e0f2fe',
+                primaryTextColor: '#0369a1',
+                primaryBorderColor: '#0284c7',
+                lineColor: '#0284c7',
+                secondaryColor: '#fef3c7',
+                tertiaryColor: '#f8fafc',
+                fontFamily: 'Lexend, sans-serif',
+                fontSize: '13px'
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --accent: #f59e0b;
+            --accent-light: #fef3c7;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --purple: #8b5cf6;
+            --purple-light: #f3e8ff;
+            --dark: #0f172a;
+            --slate: #334155;
+            --muted: #64748b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 14px rgba(15,23,42,0.06);
+            --shadow-lg: 0 10px 25px -5px rgba(15,23,42,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 320px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            padding: 24px 18px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 20px; border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .brand-icon {
+            width: 44px; height: 44px; border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .brand-info h2 { font-size: 17px; font-weight: 700; color: var(--dark); }
+        .brand-info span {
+            font-size: 11.5px; color: var(--primary); font-weight: 600;
+            background: var(--primary-light); padding: 2px 8px; border-radius: 20px; display: inline-block;
+        }
+
+        .nav-group { margin-bottom: 24px; }
+
+        .nav-title {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--muted); font-weight: 700; margin-bottom: 10px; padding-left: 10px;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; border-radius: var(--radius-sm);
+            color: var(--slate); text-decoration: none; font-size: 13.5px;
+            font-weight: 500; transition: all 0.2s ease; margin-bottom: 3px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg); color: var(--primary); transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-light); color: var(--primary-dark); font-weight: 600;
+        }
+
+        .nav-link i { width: 20px; text-align: center; font-size: 15px; }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            margin-left: 320px; flex: 1;
+            padding: 36px 48px; max-width: 1240px;
+        }
+
+        .doc-header {
+            background: linear-gradient(135deg, #0369a1, #0284c7 60%, #38bdf8);
+            border-radius: var(--radius-lg); padding: 36px 40px;
+            color: white; box-shadow: var(--shadow-lg); margin-bottom: 36px;
+            position: relative; overflow: hidden;
+        }
+
+        .doc-header::after {
+            content: ''; position: absolute; right: -40px; top: -40px;
+            width: 220px; height: 220px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%; pointer-events: none;
+        }
+
+        .doc-header h1 {
+            font-size: 27px; font-weight: 800; letter-spacing: -0.03em;
+            margin-bottom: 12px; line-height: 1.25;
+        }
+
+        .doc-header p {
+            font-size: 14.5px; opacity: 0.95; max-width: 860px; line-height: 1.6;
+        }
+
+        .header-actions {
+            display: flex; gap: 12px; margin-top: 20px; align-items: center; flex-wrap: wrap;
+        }
+
+        .badge-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+            padding: 6px 14px; border-radius: 30px; font-size: 12.5px; font-weight: 600;
+        }
+
+        /* Section Styling */
+        .doc-section {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 32px;
+            margin-bottom: 36px; box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            display: flex; align-items: center; gap: 16px;
+            border-bottom: 2px solid var(--bg); padding-bottom: 18px; margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px; height: 48px; border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+        }
+
+        .section-header h2 {
+            font-size: 21px; font-weight: 700; color: var(--dark); letter-spacing: -0.02em;
+        }
+
+        .section-header span {
+            margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted);
+            background: var(--bg); padding: 4px 10px; border-radius: 6px;
+        }
+
+        /* Diagram Box Styling */
+        .diagram-container {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius-md);
+            padding: 22px 18px;
+            margin: 18px 0;
+            overflow-x: auto;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .diagram-title {
+            font-size: 14.5px; font-weight: 700; color: var(--primary-dark);
+            margin-bottom: 16px; text-align: left; display: flex;
+            align-items: center; gap: 10px; border-left: 4px solid var(--primary);
+            padding-left: 12px;
+        }
+
+        /* Pitch Box (Kịch bản nói 30s) */
+        .pitch-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #86efac;
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin: 18px 0;
+        }
+
+        .pitch-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .pitch-content {
+            font-size: 14px;
+            color: #14532d;
+            line-height: 1.6;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 20px; margin: 18px 0;
+        }
+
+        .card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 18px; transition: all 0.2s ease;
+        }
+
+        .card h4 {
+            font-size: 14.5px; font-weight: 700; color: var(--dark);
+            margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+        }
+
+        .card ul {
+            list-style: none; font-size: 13px; color: var(--slate);
+        }
+
+        .card ul li {
+            position: relative; padding-left: 16px; margin-bottom: 7px; line-height: 1.5;
+        }
+
+        .card ul li::before {
+            content: '•'; position: absolute; left: 2px; color: var(--primary);
+            font-weight: bold; font-size: 16px; top: -2px;
+        }
+
+        /* Q&A Highlights */
+        .qa-box {
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            border-left: 4px solid var(--primary); border-radius: var(--radius-md);
+            padding: 16px 20px; margin-top: 16px;
+        }
+
+        .qa-title {
+            font-size: 14px; font-weight: 700; color: #1e40af;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+        }
+
+        .qa-answer { font-size: 13.5px; color: #1e3a8a; line-height: 1.6; }
+
+        code {
+            font-family: 'JetBrains Mono', monospace; background: #e2e8f0;
+            color: #0f172a; padding: 2px 6px; border-radius: 4px;
+            font-size: 12.5px; font-weight: 600;
+        }
+
+        .tag-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+        }
+
+        .tag-pill.confirmed { background: var(--success-light); color: #065f46; }
+        .tag-pill.cancel-requested { background: var(--accent-light); color: #92400e; }
+        .tag-pill.cancelled { background: var(--danger-light); color: #991b1b; }
+        .tag-pill.paid { background: #dbeafe; color: #1e40af; }
+        .tag-pill.refunded { background: #e0e7ff; color: #3730a3; }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; padding: 18px 8px; }
+            .brand-info, .nav-title, .nav-link span { display: none; }
+            .nav-link { justify-content: center; }
+            .main-wrapper { margin-left: 80px; padding: 24px; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="brand-info">
+                <h2>VietTour Guide</h2>
+                <span>Tài Liệu Bảo Vệ Đồ Án</span>
+            </div>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-title">5 Module Trọng Tâm (Vấn Đáp)</div>
+            <a href="#mod-favorites" class="nav-link active">
+                <i class="fa-solid fa-heart" style="color: #e11d48;"></i>
+                <span>1. Danh sách yêu thích</span>
+            </a>
+            <a href="#mod-reviews" class="nav-link">
+                <i class="fa-solid fa-star" style="color: #ca8a04;"></i>
+                <span>2. Đánh giá Tour</span>
+            </a>
+            <a href="#mod-profile" class="nav-link">
+                <i class="fa-solid fa-user-gear" style="color: #16a34a;"></i>
+                <span>3. Cài đặt người dùng</span>
+            </a>
+            <a href="#mod-user-bookings" class="nav-link">
+                <i class="fa-solid fa-clock-rotate-left" style="color: #2563eb;"></i>
+                <span>4. Lịch sử đặt tour</span>
+            </a>
+            <a href="#mod-admin-bookings" class="nav-link">
+                <i class="fa-solid fa-clipboard-list" style="color: #7e22ce;"></i>
+                <span>5. Quản lý Booking (Admin)</span>
+            </a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-title">Phụ Lục & Kiến Trúc</div>
+            <a href="#database-summary" class="nav-link">
+                <i class="fa-solid fa-database"></i>
+                <span>Cơ sở dữ liệu (5 Bảng)</span>
+            </a>
+            <a href="#top-tips" class="nav-link">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Bí quyết đạt điểm tối đa</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <header class="doc-header">
+            <h1>Cẩm Nang Trực Quan 5 Module Trọng Tâm</h1>
+            <p>Trang bị trọn gói cho bạn: <b>Biểu đồ luồng hoạt động logic</b>, <b>Bản đồ file code cụ thể</b>, <b>Kịch bản thuyết trình tự tin trong 30 giây</b> và <b>Câu trả lời phản biện xuất sắc</b> cho 5 module trọng yếu của đồ án VietTour.</p>
+            <div class="header-actions">
+                <div class="badge-tag">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Sẵn sàng cho vấn đáp hội đồng: Danh sách yêu thích • Đánh giá • Cài đặt • Lịch sử • Quản lý Booking</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- MODULE 1: DANH SÁCH YÊU THÍCH (WISHLIST) -->
+        <!-- ========================================== -->
+        <section id="mod-favorites" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #fff1f2; color: #e11d48;"><i class="fa-solid fa-heart"></i></div>
+                <div>
+                    <h2>1. Module Danh Sách Yêu Thích (Wishlist)</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Lưu giữ tour yêu thích, chống trùng lặp dữ liệu và giao diện phản hồi tức thì (Optimistic UI)</p>
+                </div>
+                <span>Module 01</span>
+            </div>
+
+            <!-- Kịch bản nói 30s -->
+            <div class="pitch-box">
+                <div class="pitch-title"><i class="fa-solid fa-microphone"></i> Kịch bản trình bày 30 giây trước thầy cô:</div>
+                <div class="pitch-content">
+                    "Dạ thưa thầy/cô, chức năng <b>Yêu thích tour</b> cho phép khách hàng lưu lại các tour ưng ý vào danh sách cá nhân. Về mặt kỹ thuật, hệ thống dùng cơ chế <b>Optimistic UI</b>: khi bấm tim, giao diện đổi màu đỏ ngay lập tức và gửi API ngầm, nếu có lỗi mới hoàn tác lại. Dưới Database, bảng <code>wishlist</code> được đặt khóa duy nhất <code>UNIQUE(user_id, tour_id)</code> để đảm bảo 1 user không bao giờ bị lưu trùng 1 tour nhiều lần."
+                </div>
+            </div>
+
+            <!-- Biểu đồ Mermaid Module 1 -->
+            <div class="diagram-container">
+                <div class="diagram-title"><i class="fa-solid fa-diagram-project"></i> Biểu Đồ Luồng Hoạt Động Danh Sách Yêu Thích</div>
+                <pre class="mermaid">
+flowchart TD
+    START["👤 Khách hàng bấm nút Tim tại TourCard"] --> CHECK_AUTH{"Đã đăng nhập
+chưa?"}
+    CHECK_AUTH -- "Chưa đăng nhập" --> REDIRECT["Chuyển hướng trang Login / Mở Modal Đăng nhập"]
+    CHECK_AUTH -- "Đã đăng nhập" --> OPTIMISTIC["🖥️ Frontend: Đổi màu Tim ngay lập tức (Optimistic UI)"]
+
+    OPTIMISTIC --> IS_FAV{"Tour đã có trong
+Wishlist chưa?"}
+    IS_FAV -- "Chưa có (Thêm)" --> API_POST["POST /api/favorites/:tourId
+Bearer Token JWT"]
+    IS_FAV -- "Đã có (Bỏ)" --> API_DEL["DELETE /api/favorites/:tourId
+Bearer Token JWT"]
+
+    API_POST --> BE_CHECK{"Backend kiểm tra
+UNIQUE(user_id, tour_id)"}
+    BE_CHECK -- "Hợp lệ" --> INSERT_DB[("INSERT INTO wishlist
+(user_id, tour_id)")]
+    INSERT_DB --> SUCCESS["Trả JSON: { success: true }"]
+
+    API_DEL --> DELETE_DB[("DELETE FROM wishlist
+WHERE user_id AND tour_id")]
+    DELETE_DB --> SUCCESS
+
+    API_POST -. "Nếu lỗi kết nối" .-> ROLLBACK["Hoàn tác màu Tim về ban đầu & Báo lỗi Toast"]
+    API_DEL -. "Nếu lỗi kết nối" .-> ROLLBACK
+
+    style START fill:#f8fafc,stroke:#334155,stroke-width:1.5px
+    style OPTIMISTIC fill:#fdf2f8,stroke:#db2777,stroke-width:2px
+    style INSERT_DB fill:#fef3c7,stroke:#d97706,stroke-width:1.5px
+    style DELETE_DB fill:#fef3c7,stroke:#d97706,stroke-width:1.5px
+    style SUCCESS fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                </pre>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4><i class="fa-solid fa-file-code" style="color: var(--primary);"></i> Vị Trí File Code Xử Lý</h4>
+                    <ul>
+                        <li><b>Frontend UI:</b> <code>frontend/src/features/user/favorites/FavoritePage.jsx</code> (Trang danh sách) và <code>components/FavoriteButton.jsx</code>.</li>
+                        <li><b>API Client:</b> <code>frontend/src/features/user/favorites/favorite.api.js</code>.</li>
+                        <li><b>Backend Service:</b> <code>backend/src/features/favorite/favorite.service.js</code>.</li>
+                        <li><b>Database Table:</b> Bảng <code>wishlist</code> (<code>id, user_id, tour_id, created_at</code>).</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #e11d48;"></i> Câu Hỏi Giám Khảo Hay Hỏi</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.55;">
+                        <b>❓ Thầy cô hỏi:</b> "Nếu người dùng bấm click tim liên tục 10 lần thì Database có bị lưu trùng 10 dòng không?"<br>
+                        <b>👉 Trả lời:</b> "Dạ không, vì bảng <code>wishlist</code> có ràng buộc duy nhất <code>UNIQUE KEY (user_id, tour_id)</code>, khi cố tình thêm trùng thì database sẽ chặn lại và backend xử lý idempotent nên dữ liệu luôn an toàn."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MODULE 2: ĐÁNH GIÁ TOUR (REVIEWS & RATING) -->
+        <!-- ========================================== -->
+        <section id="mod-reviews" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #fefce8; color: #ca8a04;"><i class="fa-solid fa-star"></i></div>
+                <div>
+                    <h2>2. Module Đánh Giá Tour (Review & Rating)</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Cơ chế chống đánh giá ảo (Anti-Spam), liên kết chặt chẽ với đơn đã hoàn thành</p>
+                </div>
+                <span>Module 02</span>
+            </div>
+
+            <!-- Kịch bản nói 30s -->
+            <div class="pitch-box">
+                <div class="pitch-title"><i class="fa-solid fa-microphone"></i> Kịch bản trình bày 30 giây trước thầy cô:</div>
+                <div class="pitch-content">
+                    "Dạ thưa thầy/cô, để bảo vệ uy tín cho hệ thống VietTour và <b>chống đánh giá ảo (Anti-Spam)</b>, hệ thống quy định: người dùng chỉ được đánh giá tour khi thỏa mãn 2 điều kiện: (1) Đã có đơn đặt tour trạng thái <code>confirmed</code> và (2) Ngày khởi hành của tour đó đã diễn ra trong quá khứ (<code>departure_date &lt; NOW()</code>). Ngoài ra, mỗi booking chỉ được gửi đúng 1 review duy nhất nhờ ràng buộc <code>UNIQUE(booking_id)</code>."
+                </div>
+            </div>
+
+            <!-- Biểu đồ Mermaid Module 2 -->
+            <div class="diagram-container">
+                <div class="diagram-title"><i class="fa-solid fa-diagram-project"></i> Biểu Đồ Luồng Kiểm Tra Nghiệp Vụ Đánh Giá Tour</div>
+                <pre class="mermaid">
+flowchart TD
+    A["👤 Khách hàng vào trang Tour -> Bấm 'Gửi Đánh Giá'"] --> B{"1. Đã đăng nhập chưa?"}
+    B -- "Chưa" --> BLOCK1["Yêu cầu đăng nhập"]
+    B -- "Đã đăng nhập" --> C{"2. Khách đã có Booking
+cho Tour này chưa?"}
+
+    C -- "Chưa từng đặt tour" --> BLOCK2["Chặn: Bạn chưa từng đi tour này!"]
+    C -- "Đã có booking" --> D{"3. Booking có trạng thái
+'confirmed' không?"}
+
+    D -- "Chưa xác nhận/Hủy" --> BLOCK3["Chặn: Đơn hàng chưa hoàn tất!"]
+    D -- "Đã confirmed" --> E{"4. Tour đã khởi hành chưa?
+(departure_date < NOW())"}
+
+    E -- "Chưa diễn ra (Tương lai)" --> BLOCK4["Chặn: Vui lòng trải nghiệm tour trước khi đánh giá!"]
+    E -- "Đã hoàn thành tour" --> F{"5. Đơn này đã đánh giá lần nào chưa?
+(Check UNIQUE booking_id)"}
+
+    F -- "Đã đánh giá rồi" --> BLOCK5["Chặn: Mỗi chuyến đi chỉ được đánh giá 1 lần!"]
+    F -- "Chưa đánh giá" --> G["HỢP LỆ: Mở Form Đánh Giá
+(Chọn 1-5 sao + Nhập nhận xét)"]
+
+    G --> SUBMIT["Gửi POST /api/reviews"]
+    SUBMIT --> SAVE_DB[("INSERT INTO reviews
+(tour_id, user_id, booking_id, rating, comment)")]
+    SAVE_DB --> RECALC["⚙️ Service tự động tính lại Rating Trung Bình của Tour
+UPDATE tours SET rating_avg = AVG(rating)"]
+    RECALC --> DONE["Hoàn tất: Hiển thị Review công khai lên Tour"]
+
+    style BLOCK1 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style BLOCK2 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style BLOCK3 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style BLOCK4 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style BLOCK5 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style G fill:#fefce8,stroke:#ca8a04,stroke-width:2px
+    style DONE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                </pre>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4><i class="fa-solid fa-file-code" style="color: var(--primary);"></i> Vị Trí File Code Xử Lý</h4>
+                    <ul>
+                        <li><b>Frontend UI:</b> <code>frontend/src/features/tours/ReviewSection.jsx</code>.</li>
+                        <li><b>Backend Service:</b> <code>backend/src/features/review/review.service.js</code> (Hàm kiểm tra điều kiện & tính rating trung bình).</li>
+                        <li><b>Database Table:</b> Bảng <code>reviews</code> (<code>id, user_id, tour_id, booking_id, rating, comment</code>).</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #ca8a04;"></i> Câu Hỏi Giám Khảo Hay Hỏi</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.55;">
+                        <b>❓ Thầy cô hỏi:</b> "Làm sao đảm bảo 1 tài khoản không spam 100 review 5 sao cho 1 tour?"<br>
+                        <b>👉 Trả lời:</b> "Dạ, cột <code>booking_id</code> trong bảng <code>reviews</code> là UNIQUE KEY. Mỗi lần đặt tour thành công và đi xong chỉ tạo ra 1 mã booking duy nhất, vì vậy khách không thể spam nhiều review cho cùng 1 chuyến đi."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MODULE 3: CÀI ĐẶT NGƯỜI DÙNG (PROFILE) -->
+        <!-- ========================================== -->
+        <section id="mod-profile" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #f0fdf4; color: #16a34a;"><i class="fa-solid fa-user-gear"></i></div>
+                <div>
+                    <h2>3. Module Cài Đặt Người Dùng (Profile & Security)</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Cập nhật thông tin cá nhân và quy trình đổi mật khẩu mã hóa Bcrypt an toàn</p>
+                </div>
+                <span>Module 03</span>
+            </div>
+
+            <!-- Kịch bản nói 30s -->
+            <div class="pitch-box">
+                <div class="pitch-title"><i class="fa-solid fa-microphone"></i> Kịch bản trình bày 30 giây trước thầy cô:</div>
+                <div class="pitch-content">
+                    "Dạ thưa thầy/cô, Module <b>Cài đặt người dùng</b> quản lý thông tin định danh và bảo mật tài khoản. Mật khẩu khách hàng được bảo vệ bằng giải thuật <b>Bcrypt với 10 vòng salt</b>, tuyệt đối không lưu plain text. Khi đổi mật khẩu, backend bắt buộc kiểm tra mật khẩu hiện tại bằng <code>bcrypt.compare()</code>, nếu đúng mới tiến hành mã hóa mật khẩu mới và ghi đè vào DB."
+                </div>
+            </div>
+
+            <!-- Biểu đồ Mermaid Module 3 -->
+            <div class="diagram-container">
+                <div class="diagram-title"><i class="fa-solid fa-diagram-project"></i> Biểu Đồ Quy Trình Đổi Mật Khẩu & Cập Nhật Hồ Sơ</div>
+                <pre class="mermaid">
+flowchart TD
+    START["👤 Người dùng tại Trang Cài Đặt (/user/profile)"] --> CHOICE{"Chọn thao tác nào?"}
+
+    CHOICE -- "Sửa Thông Tin Cá Nhân" --> PROF_FORM["Nhập Họ tên, Số điện thoại, Ngày sinh, Địa chỉ"]
+    PROF_FORM --> PUT_PROFILE["Gửi PUT /api/auth/profile (Kèm Bearer JWT)"]
+    PUT_PROFILE --> UPDATE_USER[("UPDATE users SET fullname, phone, dob...
+WHERE id = req.user.id")]
+    UPDATE_USER --> PROF_SUCCESS["✅ Cập nhật thành công & Đồng bộ lại Auth Context"]
+
+    CHOICE -- "Đổi Mật Khẩu" --> PWD_FORM["Nhập: Mật khẩu cũ, Mật khẩu mới, Xác nhận mật khẩu"]
+    PWD_FORM --> CLIENT_VAL{"Mật khẩu mới >= 6 ký tự
+và trùng Xác nhận?"}
+    CLIENT_VAL -- "Không khớp" --> ERR_CLIENT["Báo lỗi trên Form"]
+    CLIENT_VAL -- "Khớp" --> PUT_PWD["Gửi PUT /api/auth/change-password"]
+
+    PUT_PWD --> GET_HASH[("SELECT password FROM users WHERE id = req.user.id")]
+    GET_HASH --> COMPARE{"bcrypt.compare(
+oldPassword, hashFromDb)"}
+
+    COMPARE -- "Mật khẩu cũ SAI" --> ERR_PWD["Trả lỗi 400: 'Mật khẩu cũ không chính xác'"]
+    COMPARE -- "Mật khẩu cũ ĐÚNG" --> HASH_NEW["bcrypt.hash(newPassword, saltRounds = 10)"]
+    HASH_NEW --> SAVE_PWD[("UPDATE users SET password = newHashedPassword
+WHERE id = req.user.id")]
+    SAVE_PWD --> PWD_SUCCESS["✅ Đổi mật khẩu thành công (Yêu cầu đăng nhập lại)"]
+
+    style PROF_SUCCESS fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style PWD_SUCCESS fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style ERR_PWD fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style HASH_NEW fill:#fef3c7,stroke:#d97706,stroke-width:2px
+                </pre>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4><i class="fa-solid fa-file-code" style="color: var(--primary);"></i> Vị Trí File Code Xử Lý</h4>
+                    <ul>
+                        <li><b>Frontend UI:</b> <code>frontend/src/features/user/profile/ProfilePage.jsx</code> & <code>ChangePassword.jsx</code>.</li>
+                        <li><b>Backend Service:</b> <code>backend/src/features/auth/auth.service.js</code> (Hàm <code>changePasswordService</code>).</li>
+                        <li><b>Database Table:</b> Bảng <code>users</code> (<code>id, email, password, fullname, phone, avatar, role</code>).</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #16a34a;"></i> Câu Hỏi Giám Khảo Hay Hỏi</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.55;">
+                        <b>❓ Thầy cô hỏi:</b> "Nếu Admin mở Database ra xem thì có đọc được mật khẩu của khách hàng không?"<br>
+                        <b>👉 Trả lời:</b> "Dạ không, vì mật khẩu đã được băm một chiều bằng <code>bcrypt</code> với chuỗi salt ngẫu nhiên. Đây là mã hóa một chiều không thể giải mã ngược, đảm bảo an toàn thông tin theo tiêu chuẩn quốc tế."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MODULE 4: LỊCH SỬ ĐẶT TOUR (USER BOOKINGS) -->
+        <!-- ========================================== -->
+        <section id="mod-user-bookings" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #eff6ff; color: #2563eb;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div>
+                    <h2>4. Module Lịch Sử Đặt Tour (User Bookings)</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Tra cứu vé điện tử, phân loại tab trạng thái và gửi yêu cầu hủy hoàn tiền</p>
+                </div>
+                <span>Module 04</span>
+            </div>
+
+            <!-- Kịch bản nói 30s -->
+            <div class="pitch-box">
+                <div class="pitch-title"><i class="fa-solid fa-microphone"></i> Kịch bản trình bày 30 giây trước thầy cô:</div>
+                <div class="pitch-content">
+                    "Dạ thưa thầy/cô, Module <b>Lịch sử đặt tour</b> cho phép khách hàng theo dõi toàn bộ các tour mình đã đăng ký. Khách có thể xem chi tiết danh sách hành khách, vé tour và lịch khởi hành. Đặc biệt, khách hàng có thể chủ động bấm <b>Yêu cầu hủy booking</b> nếu đã thanh toán 100%. Hệ thống sẽ tự động tính toán số ngày còn lại đến ngày khởi hành để hiển thị rõ ràng số tiền phạt và số tiền hoàn lại trước khi gửi yêu cầu."
+                </div>
+            </div>
+
+            <!-- Biểu đồ Mermaid Module 4 -->
+            <div class="diagram-container">
+                <div class="diagram-title"><i class="fa-solid fa-diagram-project"></i> Biểu Đồ Luồng Tra Cứu & Gửi Yêu Cầu Hủy Tour</div>
+                <pre class="mermaid">
+flowchart TD
+    START["👤 Khách mở Trang Lịch Sử Đặt Tour (/user/bookings)"] --> FETCH["GET /api/bookings/my-bookings
+Lấy danh sách booking của User"]
+    FETCH --> RENDER["Hiển thị danh sách chia theo 4 Tabs:
+[Tất cả] [Đã xác nhận] [Yêu cầu hủy] [Đã hủy]"]
+
+    RENDER --> CLICK_DETAIL["Khách bấm vào một đơn để xem Chi Tiết"]
+    CLICK_DETAIL --> CHECK_CANCEL_COND{"ĐIỀU KIỆN HIỆN NÚT HỦY:
+1. payment_status === 'paid' (Đã trả 100%)
+2. departure_date > Hôm nay (Chưa khởi hành)"}
+
+    CHECK_CANCEL_COND -- "Không thỏa mãn" --> HIDE_BTN["ẨN nút 'Yêu cầu hủy booking'"]
+    CHECK_CANCEL_COND -- "Thỏa mãn" --> SHOW_BTN["HIỆN nút đỏ 'Yêu cầu hủy booking'"]
+
+    SHOW_BTN --> CLICK_CANCEL["Khách bấm 'Yêu cầu hủy booking'"]
+    CLICK_CANCEL --> API_REFUND_INFO["GET /api/bookings/:id/refund-info"]
+    API_REFUND_INFO --> CALC_PENALTY["Backend: calculateRefund()
+Tính daysDiff theo mốc YYYY-MM-DD
+Áp dụng 4 mốc phạt: 10%, 50%, 70%, 100%"]
+
+    CALC_PENALTY --> OPEN_MODAL["Mở CancelModal.jsx:
+Hiển thị: Số ngày còn lại, Tiền đã nộp,
+Tiền phạt, Tiền dự kiến hoàn"]
+    OPEN_MODAL --> CONFIRM_CANCEL["Khách bấm 'Xác nhận gửi yêu cầu'"]
+
+    CONFIRM_CANCEL --> POST_CANCEL["POST /api/bookings/:id/cancel"]
+    POST_CANCEL --> UPDATE_DB[("UPDATE bookings SET
+status = 'cancel_requested',
+updated_at = NOW()")]
+    UPDATE_DB --> BADGE_AMBER["Đổi Badge đơn hàng sang màu VÀNG:
+'Yêu cầu hủy'"]
+
+    style SHOW_BTN fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+    style OPEN_MODAL fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style BADGE_AMBER fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style UPDATE_DB fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
+                </pre>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4><i class="fa-solid fa-file-code" style="color: var(--primary);"></i> Vị Trí File Code Xử Lý</h4>
+                    <ul>
+                        <li><b>Frontend UI:</b> <code>frontend/src/features/user/bookings/BookingHistory.jsx</code> & <code>BookingDetail/CancelModal.jsx</code>.</li>
+                        <li><b>Backend Service:</b> <code>backend/src/features/booking/booking.service.js</code> (Hàm <code>cancelBookingService</code>).</li>
+                        <li><b>Database Table:</b> Bảng <code>bookings</code> (<code>id, user_id, departure_id, status, payment_status, total_price</code>).</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #2563eb;"></i> Câu Hỏi Giám Khảo Hay Hỏi</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.55;">
+                        <b>❓ Thầy cô hỏi:</b> "Khách mới cọc 30% có được bấm hủy để đòi hoàn tiền không?"<br>
+                        <b>👉 Trả lời:</b> "Dạ không, nút hủy hoàn tiền chỉ xuất hiện khi khách đã thanh toán 100% (<code>paid</code>). Tiền cọc 30% là khoản phí cam kết giữ chỗ dịch vụ máy bay/khách sạn không hoàn lại nếu khách tự ý bỏ tour."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MODULE 5: QUẢN LÝ BOOKING (ADMIN) -->
+        <!-- ========================================== -->
+        <section id="mod-admin-bookings" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #f3e8ff; color: #7e22ce;"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div>
+                    <h2>5. Module Quản Lý Booking Phía Quản Trị (Admin Bookings)</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Kiểm soát danh sách đơn, sắp xếp realtime, duyệt hoàn tiền và nhả ghế trong Database Transaction</p>
+                </div>
+                <span>Module 05</span>
+            </div>
+
+            <!-- Kịch bản nói 30s -->
+            <div class="pitch-box">
+                <div class="pitch-title"><i class="fa-solid fa-microphone"></i> Kịch bản trình bày 30 giây trước thầy cô:</div>
+                <div class="pitch-content">
+                    "Dạ thưa thầy/cô, Module <b>Quản lý Booking của Admin</b> là hạt nhân vận hành của công ty. Danh sách được sắp xếp ưu tiên theo <code>updated_at DESC</code> nên bất kỳ đơn nào vừa đặt hoặc vừa có yêu cầu hủy sẽ lập tức nhảy lên vị trí đầu tiên. Khi Admin phê duyệt hoàn tiền, hệ thống thực thi một <b>Database Transaction (ACID)</b>: đồng thời đổi trạng thái đơn sang <code>cancelled/refunded</code> và <b>tự động cộng trả lại số ghế trống</b> vào bảng <code>tour_departures</code>, bảo toàn dữ liệu 100%."
+                </div>
+            </div>
+
+            <!-- Biểu đồ Mermaid Module 5 -->
+            <div class="diagram-container">
+                <div class="diagram-title"><i class="fa-solid fa-diagram-project"></i> Biểu Đồ Quy Trình Quản Trị & Phê Duyệt Hoàn Tiền (Transaction)</div>
+                <pre class="mermaid">
+flowchart TD
+    ADMIN_OPEN["👨‍💼 Admin mở Danh Sách Booking (/admin/bookings)"] --> SQL_LIST["SQL Query: SELECT * FROM bookings
+ORDER BY updated_at DESC, id DESC"]
+    SQL_LIST --> TABLE["Hiển thị BookingsTable.jsx:
+- Đơn vừa có biến động nằm trên cùng
+- Huy hiệu: Đã xác nhận (Xanh) | Yêu cầu hủy (Vàng) | Đã hủy (Đỏ)"]
+
+    TABLE --> FILTER{"Admin lọc dữ liệu theo:"}
+    FILTER --> F1["Tìm kiếm đa năng: Mã BK-xxxxx, Tên khách, Email, Tên tour"]
+    FILTER --> F2["Khoảng ngày khởi hành: Từ ngày ... Đến ngày ..."]
+    FILTER --> F3["Lọc trạng thái: confirmed, cancel_requested, cancelled"]
+
+    TABLE --> OPEN_ROW["Admin click dòng đơn có yêu cầu hủy"]
+    OPEN_ROW --> VIEW_DETAIL["Mở BookingDetail/index.jsx -> Xem AdminRefundModal.jsx"]
+
+    VIEW_DETAIL --> ADMIN_DECIDE{"Admin đưa ra quyết định"}
+
+    ADMIN_DECIDE -- "1. Phê Duyệt Hoàn Tiền" --> TRX_START["BẮT ĐẦU DATABASE TRANSACTION (knex.transaction)"]
+    TRX_START --> LOCK_ROW["Lock booking row (forUpdate)"]
+    LOCK_ROW --> STEP1["Bước 1: UPDATE bookings SET
+status = 'cancelled', payment_status = 'refunded'"]
+    STEP1 --> STEP2["Bước 2: Tự động nhả số ghế cho chuyến khởi hành
+UPDATE tour_departures
+SET seats_available = seats_available + pax"]
+    STEP2 --> TRX_COMMIT["COMMIT TRANSACTION THÀNH CÔNG"]
+    TRX_COMMIT --> TOAST_OK["Thông báo hoàn tiền thành công & Ghế đã sẵn sàng cho khách mới!"]
+
+    ADMIN_DECIDE -- "2. Từ Chối Yêu Cầu" --> REJECT["POST /api/admin/bookings/:id/reject-cancel"]
+    REJECT --> REVERT["UPDATE bookings SET status = 'confirmed'
+(Giữ nguyên tiền & giữ nguyên chỗ)"]
+
+    style TRX_START fill:#faf5ff,stroke:#9333ea,stroke-width:2px
+    style TRX_COMMIT fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style STEP2 fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style TOAST_OK fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                </pre>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4><i class="fa-solid fa-file-code" style="color: var(--primary);"></i> Vị Trí File Code Xử Lý</h4>
+                    <ul>
+                        <li><b>Frontend UI:</b> <code>frontend/src/features/admin/bookings/BookingsTable.jsx</code> & <code>AdminRefundModal.jsx</code>.</li>
+                        <li><b>Backend Service:</b> <code>backend/src/features/admin/bookings/booking.service.js</code> (Hàm <code>refundBookingService</code>).</li>
+                        <li><b>Database Tables:</b> Cập nhật đồng thời bảng <code>bookings</code> và bảng <code>tour_departures</code> trong cùng 1 Transaction.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #7e22ce;"></i> Câu Hỏi Giám Khảo Hay Hỏi</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.55;">
+                        <b>❓ Thầy cô hỏi:</b> "Nếu lỡ bước cộng trả ghế bị lỗi mạng thì đơn có bị hủy không?"<br>
+                        <b>👉 Trả lời:</b> "Dạ không, vì toàn bộ logic được bọc trong <code>db.transaction()</code>. Nếu bước cộng ghế bị lỗi, Knex sẽ tự động ROLLBACK toàn bộ, trạng thái đơn sẽ không bị đổi và hệ thống báo lỗi ngay để Admin kiểm tra."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PHẦN PHỤ LỤC: 5 BẢNG DỮ LIỆU CỐT LÕI -->
+        <!-- ========================================== -->
+        <section id="database-summary" class="doc-section">
+            <div class="section-header">
+                <div class="section-icon" style="background: #f8fafc; color: var(--slate);"><i class="fa-solid fa-database"></i></div>
+                <div>
+                    <h2>Tóm Tắt 5 Bảng Dữ Liệu Tương Ứng 5 Module</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Cấu trúc schema cơ bản bạn cần nhớ trong database <code>db_viet_travel</code></p>
+                </div>
+                <span>Schema</span>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+                <thead>
+                    <tr style="background: #f8fafc; border-bottom: 2px solid var(--border); text-align: left;">
+                        <th style="padding: 12px;">Module</th>
+                        <th style="padding: 12px;">Tên Bảng</th>
+                        <th style="padding: 12px;">Khóa Chính / Khóa Ngoại</th>
+                        <th style="padding: 12px;">Ràng Buộc Kỹ Thuật Đáng Chú Ý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;"><b>1. Yêu thích</b></td>
+                        <td style="padding: 12px;"><code>wishlist</code></td>
+                        <td style="padding: 12px;">PK <code>id</code>, FK <code>user_id, tour_id</code></td>
+                        <td style="padding: 12px;"><code>UNIQUE(user_id, tour_id)</code> (Chống lưu trùng)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;"><b>2. Đánh giá</b></td>
+                        <td style="padding: 12px;"><code>reviews</code></td>
+                        <td style="padding: 12px;">PK <code>id</code>, FK <code>user_id, tour_id</code></td>
+                        <td style="padding: 12px;"><code>UNIQUE(booking_id)</code> (1 vé đi tour chỉ đánh giá 1 lần)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;"><b>3. Cài đặt</b></td>
+                        <td style="padding: 12px;"><code>users</code></td>
+                        <td style="padding: 12px;">PK <code>id</code></td>
+                        <td style="padding: 12px;"><code>password</code> băm Bcrypt 10 rounds, <code>email</code> UNIQUE</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;"><b>4. Lịch sử</b></td>
+                        <td style="padding: 12px;"><code>bookings</code></td>
+                        <td style="padding: 12px;">PK <code>id</code>, FK <code>user_id, departure_id</code></td>
+                        <td style="padding: 12px;">Lưu <code>status</code> và <code>payment_status</code> độc lập</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><b>5. Quản lý Booking</b></td>
+                        <td style="padding: 12px;"><code>tour_departures</code></td>
+                        <td style="padding: 12px;">PK <code>id</code>, FK <code>tour_id</code></td>
+                        <td style="padding: 12px;"><code>seats_available</code> được hoàn/trừ tự động trong Transaction</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PHẦN BÍ QUYẾT ĐẠT ĐIỂM TỐI ĐA KHI BẢO VỆ -->
+        <!-- ========================================== -->
+        <section id="top-tips" class="doc-section" style="background: linear-gradient(135deg, #f8fafc, #eff6ff); border-color: #bfdbfe;">
+            <div class="section-header">
+                <div class="section-icon" style="background: #e0f2fe; color: var(--primary);"><i class="fa-solid fa-trophy"></i></div>
+                <div>
+                    <h2>Bí Quyết Trình Bày Tự Tin Trước Hội Đồng Chấm Thi</h2>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">3 Nguyên tắc vàng giúp bạn làm chủ buổi vấn đáp</p>
+                </div>
+                <span>Top Tips</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="card" style="background: white;">
+                    <h4 style="color: #0369a1;"><i class="fa-solid fa-bullseye"></i> 1. Trả Lời Trọng Tâm Vào Kiến Trúc</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.6;">
+                        Khi được hỏi bất kỳ tính năng nào, hãy trả lời theo đúng luồng: <b>UI → API → Controller → Service → Repository → Database</b>. Nhấn mạnh rằng Controller không query DB mà nhường toàn bộ cho Service và Knex Repository.
+                    </p>
+                </div>
+                <div class="card" style="background: white;">
+                    <h4 style="color: #16a34a;"><i class="fa-solid fa-shield-halved"></i> 2. Nhấn Mạnh Tính Toàn Vẹn Dữ Liệu (ACID)</h4>
+                    <p style="font-size: 13px; color: var(--slate); line-height: 1.6;">
+                        Thầy cô rất thích hỏi về việc "Ghế có bị mất không? Tiền hoàn có bị lệch không?". Hãy luôn khẳng định nhóm dùng <b>Database Transaction</b> để bảo toàn số lượng ghế và dùng <code>parseDepartureDate()</code> tách chuỗi <code>YYYY-MM-DD</code> để tránh lỗi múi giờ.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0 40px;">
+            <p><b>© 2026 Đồ Án Tốt Nghiệp VietTour - Khoa Công Nghệ Thông Tin</b></p>
+            <p style="margin-top: 4px;">Chúc bạn có một buổi bảo vệ đồ án xuất sắc và đạt kết quả cao nhất!</p>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling & active link highlighting
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Intersection Observer để tự động active menu khi scroll
+        const sections = document.querySelectorAll('section.doc-section');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 130) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
