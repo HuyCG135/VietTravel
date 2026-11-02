@@ -26,6 +26,7 @@ class Booking {
             .leftJoin("tours as t", "d.tour_id", "t.id")
             .select(
                 "b.*",
+                "t.id as tour_id",
                 "t.name as tour_name",
                 "t.price_default as price",
                 "t.duration",
@@ -53,6 +54,7 @@ class Booking {
             .leftJoin("tours as t", "d.tour_id", "t.id")
             .select(
                 "b.*",
+                "t.id as tour_id",
                 "t.name as tour_name",
                 "t.duration",
                 "t.region",

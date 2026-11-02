@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Loading from "../../../../components/Loading";
 import { useToast } from "../../../../context/ToastContext";
 import { getBookingDetail, cancelBooking, createPaymentUrl } from "../booking.api";
+import { getMyReviews, createReview } from "../../reviews/review.api";
 import BookingHeader from "./BookingHeader";
 import TourInfoSection from "./TourInfoSection";
 import ContactSection from "./ContactSection";
@@ -10,6 +11,7 @@ import PassengersTable from "./PassengersTable";
 import PaymentSummary from "./PaymentSummary";
 import CancelModal from "./CancelModal";
 import InvoiceModal from "./InvoiceModal";
+import ReviewModal from "./ReviewModal";
 
 const toNum = (v) => Number(v) || 0;
 
@@ -21,6 +23,9 @@ export default function BookingDetail() {
     const [error, setError] = useState("");
     const [invoiceOpen, setInvoiceOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
+    const [reviewOpen, setReviewOpen] = useState(false);
+    const [hasReviewed, setHasReviewed] = useState(false);
+    const [submittingReview, setSubmittingReview] = useState(false);
     const [cancelling, setCancelling] = useState(false);
     const [paying, setPaying] = useState(false);
 
@@ -32,6 +37,18 @@ export default function BookingDetail() {
                 const res = await getBookingDetail(id);
                 if (res?.success) {
                     setBooking(res.data);
+                    // Kiểm tra xem user đã từng đánh giá tour này chưa
+                    try {
+                        const reviewsRes = await getMyReviews();
+                        if (reviewsRes?.success && Array.isArray(reviewsRes.data)) {
+                            const found = reviewsRes.data.some(
+                                (r) => String(r.tour_id) === String(res.data.tour_id)
+                            );
+                            setHasReviewed(found);
+                        }
+                    } catch {
+                        // ignore error checking reviews
+                    }
                 } else {
                     setError(res?.message || "Không thể tải thông tin đặt chỗ");
                 }
@@ -45,16 +62,17 @@ export default function BookingDetail() {
     }, [id]);
 
     useEffect(() => {
-        if (!invoiceOpen && !cancelOpen) return;
+        if (!invoiceOpen && !cancelOpen && !reviewOpen) return;
         const onKey = (e) => {
             if (e.key === "Escape") {
                 setInvoiceOpen(false);
                 setCancelOpen(false);
+                setReviewOpen(false);
             }
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [invoiceOpen, cancelOpen]);
+    }, [invoiceOpen, cancelOpen, reviewOpen]);
 
     const handlePay = async () => {
         setPaying(true);
@@ -86,6 +104,32 @@ export default function BookingDetail() {
             toast.danger(err?.message || "Lỗi kết nối đến server");
         } finally {
             setCancelling(false);
+        }
+    };
+
+    const handleCreateReview = async (rating, comment) => {
+        if (!booking?.tour_id) {
+            toast.danger("Không tìm thấy thông tin tour để đánh giá");
+            return;
+        }
+        setSubmittingReview(true);
+        try {
+            const res = await createReview({
+                tour_id: Number(booking.tour_id),
+                rating,
+                comment,
+            });
+            if (res?.success) {
+                toast.success(res.message || "Đánh giá tour thành công!");
+                setHasReviewed(true);
+                setReviewOpen(false);
+            } else {
+                toast.danger(res?.message || "Không thể gửi đánh giá");
+            }
+        } catch (err) {
+            toast.danger(err?.message || "Lỗi kết nối đến server");
+        } finally {
+            setSubmittingReview(false);
         }
     };
 
@@ -142,6 +186,8 @@ export default function BookingDetail() {
                     <BookingHeader
                         booking={b}
                         isCompleted={isCompleted}
+                        hasReviewed={hasReviewed}
+                        onOpenReview={() => setReviewOpen(true)}
                         onOpenInvoice={() => setInvoiceOpen(true)}
                         onOpenCancel={() => setCancelOpen(true)}
                         onOpenPay={handlePay}
@@ -176,6 +222,15 @@ export default function BookingDetail() {
                         children={children}
                         onClose={() => setInvoiceOpen(false)}
                     />
+
+                    {reviewOpen && (
+                        <ReviewModal
+                            tourName={b?.tour_name}
+                            saving={submittingReview}
+                            onClose={() => setReviewOpen(false)}
+                            onSubmit={handleCreateReview}
+                        />
+                    )}
                 </>
             )}
         </div>
