@@ -273,6 +273,7 @@ export async function seed(knex) {
     }
 
     const passengerRows = [];
+    const paymentRows = [];
     for (const booking of saved) {
         const [id] = await knex("bookings").insert({
             user_id: booking.user_id,
@@ -298,6 +299,37 @@ export async function seed(knex) {
             created_at: booking.created_at,
             updated_at: booking.updated_at,
         });
+
+        // Seed giao dịch mẫu vào booking_payments cho các đơn đã cọc hoặc đã trả đủ
+        if (booking.payment_status === "deposit_paid") {
+            paymentRows.push({
+                booking_id: id,
+                type: "deposit",
+                amount: booking.deposit_amount,
+                status: "paid",
+                txn_ref: `BOK${id}_DEP_SEED_${Math.floor(booking.created_at.getTime() / 1000)}`,
+                provider_txn_no: `VNP${rand(10000000, 99999999)}`,
+                provider_response: JSON.stringify({ vnp_ResponseCode: "00", vnp_BankCode: "NCB" }),
+                requested_at: booking.created_at,
+                paid_at: booking.updated_at,
+                created_at: booking.created_at,
+                updated_at: booking.updated_at,
+            });
+        } else if (booking.payment_status === "paid") {
+            paymentRows.push({
+                booking_id: id,
+                type: "full",
+                amount: booking.paid_amount,
+                status: "paid",
+                txn_ref: `BOK${id}_FULL_SEED_${Math.floor(booking.created_at.getTime() / 1000)}`,
+                provider_txn_no: `VNP${rand(10000000, 99999999)}`,
+                provider_response: JSON.stringify({ vnp_ResponseCode: "00", vnp_BankCode: "NCB" }),
+                requested_at: booking.created_at,
+                paid_at: booking.updated_at,
+                created_at: booking.created_at,
+                updated_at: booking.updated_at,
+            });
+        }
 
         const totalPax = booking.adults + booking.children;
         for (let p = 0; p < totalPax; p += 1) {
@@ -328,6 +360,10 @@ export async function seed(knex) {
 
     if (passengerRows.length > 0) {
         await knex("passengers").insert(passengerRows);
+    }
+
+    if (paymentRows.length > 0) {
+        await knex("booking_payments").insert(paymentRows);
     }
 
     // ===== Cập nhật chỗ trống của lịch khởi hành =====
