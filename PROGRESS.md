@@ -8,7 +8,7 @@
 
 ## 1. Trạng thái hiện tại
 
-- **Cập nhật gần nhất:** 2026-10-31
+- **Cập nhật gần nhất:** 2026-11-02
 - **Backend:** Express + MySQL (`db_viet_travel`, port `3307`), chạy `npm run dev` trong `backend/`.
 - **Frontend:** React + Vite, chạy `npm run dev` trong `frontend/` (proxy `/api` → `http://localhost:3000`).
 - **Đăng nhập admin test:** `admin@viettour.vn` / `123456` (field là `username`).
@@ -17,6 +17,15 @@
 ---
 
 ## 2. Checklist công việc
+
+### ✅ Hoàn thiện tính năng Quên mật khẩu & Đặt lại mật khẩu (2026-11-02)
+
+- [x] Thêm hàm `forgotPassword(email)` và `resetPassword(token, newPassword, confirmPassword)` vào `frontend/src/features/auth/auth.api.js`
+- [x] Hoàn thiện `frontend/src/features/auth/ForgotPassword.jsx`: validate email chặt chẽ (độ dài 5-100, regex email), gọi API thật, xử lý lỗi từ backend, hiển thị thông báo phản hồi
+- [x] Thêm giao diện thông báo gửi email thành công với đếm ngược 60s cooldown gửi lại (`resend`) và tùy chọn đổi email
+- [x] Tạo mới trang `frontend/src/features/auth/ResetPassword.jsx`: xử lý nhận token từ URL query, validate mật khẩu mới, gọi API reset-password, thông báo kết quả và chuyển hướng đăng nhập
+- [x] Khai báo route `/reset-password` trong `frontend/src/routes/AppRoutes.jsx`
+- [x] Chạy `npm run lint` (pass) và `npm run build` (pass)
 
 ### ✅ Admin Bookings — Dashboard `/admin/bookings` (hoàn thành 2026-10-19)
 
@@ -522,6 +531,26 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 - Earnings = `0 đ` vì toàn bộ booking seed là `unpaid`.
 - Sparkline chỉ có 1 tháng có dữ liệu vì mọi booking được tạo cùng ngày `2026-10-17`.
+
+---
+
+### 2026-11-02 — Hoàn thiện tính năng Quên mật khẩu & Đặt lại mật khẩu
+
+**Đã làm:**
+
+- Bổ sung 2 hàm API `forgotPassword` và `resetPassword` trong `auth.api.js` kết nối với các endpoint Express backend.
+- Hoàn thiện toàn bộ logic & giao diện trang `ForgotPassword.jsx`: form validation, gọi API, hiển thị loading spinner, thông báo lỗi nếu email không tồn tại hoặc tài khoản Google, chuyển sang màn hình thông báo gửi email thành công với đếm ngược 60 giây gửi lại.
+- Tạo mới trang `ResetPassword.jsx` và gắn route `/reset-password` trong `AppRoutes.jsx` để người dùng khi nhấn link trong email có thể đặt lại mật khẩu thành công.
+- Kiểm tra `npm run lint` và `npm run build` trên frontend đều pass.
+
+**File liên quan:**
+
+- Thêm: `frontend/src/features/auth/ResetPassword.jsx`
+- Sửa: `frontend/src/features/auth/ForgotPassword.jsx`, `frontend/src/features/auth/auth.api.js`, `frontend/src/routes/AppRoutes.jsx`, `PROGRESS.md`
+
+**Kiểm tra:**
+
+- `npm run lint` pass, `npm run build` pass.
 
 ---
 

@@ -8,6 +8,7 @@ import BookingPage from "../features/user/book-tour/BookingPage";
 import Login from "../features/auth/Login";
 import Register from "../features/auth/Register";
 import ForgotPassword from "../features/auth/ForgotPassword";
+import ResetPassword from "../features/auth/ResetPassword";
 import VerifyEmail from "../features/auth/VerifyEmail";
 import CheckEmail from "../features/auth/CheckEmail";
 import About from "../pages/About";
@@ -30,6 +31,7 @@ export default function AppRoutes() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
 
                 <Route element={<MainLayout />}>
