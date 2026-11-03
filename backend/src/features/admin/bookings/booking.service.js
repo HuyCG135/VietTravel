@@ -1,5 +1,6 @@
 import db from "../../../config/knex.js";
 import AdminBooking from "./booking.repository.js";
+import { resolveRefundQuote } from "./refund.service.js";
 
 const createHttpError = (status, message) => {
     const err = new Error(message);
@@ -366,15 +367,25 @@ export const updateBookingStatusService = async (id, status) => {
     });
 };
 
-// Phê duyệt hoàn tiền: set payment_status='refunded', status='cancelled', nhả lại ghế
+// Phê duyệt hoàn tiền: set payment_status='refunded', status='cancelled', nhả lại ghế.
+// Số hoàn ưu tiên lấy theo snapshot lúc khách gửi yêu cầu (refund_penalty_pct/refund_amount)
+// để chờ duyệt lâu cũng không bị đổi mốc phạt.
 export const refundBookingService = async (id, payload) => {
-    const { refundAmount } = payload || {};
-    
+    const { refundAmount: requestedAmount, refundMethod, providerRef, note } = payload || {};
+
     return db.transaction(async (trx) => {
         const booking = await AdminBooking.findRawById(id, trx, true);
         if (!booking) {
             throw createHttpError(404, "Không tìm thấy booking");
         }
+
+        const quote = resolveRefundQuote(booking);
+        const amount = Number(requestedAmount);
+        // Không cho hoàn vượt quá số đã thu / vượt chính sách tính được.
+        const refundAmount =
+            Number.isFinite(amount) && amount >= 0
+                ? Math.min(amount, quote.refundAmount)
+                : quote.refundAmount;
 
         // Nhả ghế nếu booking chưa ở trạng thái cancelled
         if (booking.status !== "cancelled") {
@@ -387,12 +398,22 @@ export const refundBookingService = async (id, payload) => {
             .update({
                 payment_status: "refunded",
                 status: "cancelled",
-                updated_at: db.raw("NOW()"),
+                cancel_reason: booking.status === "cancel_requested" ? "user" : "admin",
+                cancelled_at: trx.fn.now(),
+                refund_amount: refundAmount,
+                refund_penalty_pct: quote.penaltyPct,
+                refund_method: refundMethod || "chuyen_khoan",
+                refund_provider_ref: providerRef || null,
+                refund_note: note || null,
+                refunded_at: trx.fn.now(),
+                updated_at: trx.fn.now(),
             });
 
         return {
             id: booking.id,
-            refundAmount: refundAmount || 0,
+            refundAmount,
+            penaltyPct: quote.penaltyPct,
+            refundMethod: refundMethod || "chuyen_khoan",
             status: "cancelled",
             payment_status: "refunded",
             updatedAt: new Date(),
@@ -400,7 +421,7 @@ export const refundBookingService = async (id, payload) => {
     });
 };
 
-// Từ chối yêu cầu hủy: trả trạng thái về confirmed
+// Từ chối yêu cầu hủy: trả trạng thái về confirmed + xóa snapshot phạt
 export const rejectCancelBookingService = async (id) => {
     const booking = await AdminBooking.findDetailById(id);
     if (!booking) {
@@ -411,7 +432,15 @@ export const rejectCancelBookingService = async (id) => {
         throw createHttpError(400, "Booking không ở trạng thái yêu cầu hủy");
     }
 
-    await AdminBooking.updateStatus(id, "confirmed");
+    await db("bookings")
+        .where("id", id)
+        .update({
+            status: "confirmed",
+            refund_amount: null,
+            refund_penalty_pct: null,
+            refund_days_remaining: null,
+            updated_at: db.fn.now(),
+        });
 
     return {
         id: booking.id,

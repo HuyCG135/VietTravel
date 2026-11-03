@@ -4,7 +4,7 @@ import Tour from "../tour/tour.repository.js";
 import jwt from "jsonwebtoken";
 import { ProductCode, VnpLocale, dateFormat } from "vnpay";
 import { ROLE, BOOKING_MANAGEMENT } from "../../middlewares/auth.js";
-import { calculateRefund } from "../admin/bookings/refund.service.js";
+import { resolveRefundQuote } from "../admin/bookings/refund.service.js";
 import {
     DEPOSIT_PERCENT,
     BALANCE_DUE_DAYS,
@@ -317,18 +317,23 @@ export const getBookingRefundInfoService = async (userId, role, bookingId) => {
     if (!booking) {
         throw createHttpError(404, "Không tìm thấy booking");
     }
-    if (booking.user_id !== userId && !BOOKING_MANAGEMENT.includes(role)) {
+    if (String(booking.user_id) !== String(userId) && !BOOKING_MANAGEMENT.includes(role)) {
         throw createHttpError(403, "Bạn không có quyền xem thông tin booking này");
     }
-    if (booking.payment_status !== "paid") {
-        throw createHttpError(400, "Chỉ có thể xem thông tin hoàn tiền cho đơn đã thanh toán đầy đủ");
+    // Cho phép xem chính sách hoàn tiền với đơn đã cọc (deposit_paid) hoặc đã trả đủ (paid).
+    if (!["deposit_paid", "paid"].includes(booking.payment_status)) {
+        throw createHttpError(400, "Chỉ có thể xem thông tin hoàn tiền cho đơn đã đặt cọc hoặc đã thanh toán");
     }
-    const info = calculateRefund(booking.departure_date, booking.paid_amount || booking.total_price);
+    if (booking.status === "cancelled" || booking.payment_status === "refunded") {
+        throw createHttpError(400, "Booking này đã bị hủy, không thể xem chính sách hủy");
+    }
+
+    const info = resolveRefundQuote(booking);
     return {
         bookingId: booking.id,
         tourName: booking.tour_name,
         departureDate: booking.departure_date,
-        paidAmount: booking.paid_amount || booking.total_price,
+        paymentStatus: booking.payment_status,
         ...info,
     };
 };
@@ -341,8 +346,10 @@ export const cancelBookingService = async (userId, role, bookingId) => {
     if (booking.user_id !== userId && !BOOKING_MANAGEMENT.includes(role)) {
         throw createHttpError(403, "Bạn không có quyền hủy booking này");
     }
-    if (booking.payment_status !== "paid") {
-        throw createHttpError(400, "Chỉ có thể yêu cầu hủy đơn đã thanh toán đầy đủ");
+    // Mở rộng: đơn đã cọc (deposit_paid) cũng được gửi yêu cầu hủy;
+    // phí phạt tính trên tổng giá tour, phần chưa trả không bị truy thu.
+    if (!["deposit_paid", "paid"].includes(booking.payment_status)) {
+        throw createHttpError(400, "Chỉ có thể yêu cầu hủy đơn đã đặt cọc hoặc đã thanh toán đầy đủ");
     }
     if (booking.status === "cancel_requested" || booking.status === "cancelled") {
         throw createHttpError(400, "Booking này đã gửi yêu cầu hủy hoặc đã bị hủy");
@@ -351,8 +358,18 @@ export const cancelBookingService = async (userId, role, bookingId) => {
     if (dep.getTime() <= Date.now()) {
         throw createHttpError(400, "Tour đã khởi hành hoặc đã kết thúc, không thể yêu cầu hủy");
     }
-    const refundInfo = calculateRefund(booking.departure_date, booking.paid_amount || booking.total_price);
-    await Booking.updateStatus(bookingId, "cancel_requested");
+
+    // Tính & CHỐT mốc phạt ngay tại thời điểm khách gửi yêu cầu.
+    const refundInfo = resolveRefundQuote(booking);
+    const requested = await Booking.requestCancellation(bookingId, {
+        refundAmount: refundInfo.refundAmount,
+        penaltyPct: refundInfo.penaltyPct,
+        daysRemaining: refundInfo.daysDiff,
+    });
+    if (!requested) {
+        throw createHttpError(400, "Không thể gửi yêu cầu hủy ở trạng thái hiện tại của booking");
+    }
+
     return {
         success: true,
         message: "Đã gửi yêu cầu hủy booking thành công. Vui lòng chờ quản trị viên phê duyệt.",
@@ -648,6 +665,9 @@ export const createPaymentUrlService = async (req, bookingId, type, vnpay) => {
     if (booking.status === "cancelled") {
         throw createHttpError(400, "Đơn đã bị hủy, vui lòng đặt lại");
     }
+    if (booking.status === "cancel_requested") {
+        throw createHttpError(400, "Đơn đang chờ xử lý yêu cầu hủy, không thể thanh toán");
+    }
 
     // Kiểm tra quyền sở hữu
     if (String(booking.user_id) !== String(req.user.id) && !BOOKING_MANAGEMENT.includes(req.user.role)) {
@@ -719,6 +739,9 @@ export const payLaterService = async (bookingId, token, vnpay, req) => {
     booking = await expireOrCancelIfDue(booking);
     if (booking.status === "cancelled") {
         throw createHttpError(400, "Đơn đã bị hủy, vui lòng đặt lại");
+    }
+    if (booking.status === "cancel_requested") {
+        throw createHttpError(400, "Đơn đang chờ xử lý yêu cầu hủy, không thể thanh toán");
     }
 
     // deposit_paid -> balance; unpaid -> full (email chỉ phát sau khi thanh toán,

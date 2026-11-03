@@ -840,6 +840,83 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Cho phép hủy đơn đã cọc + chốt mốc phạt tại thời điểm gửi yêu cầu
+
+**Đã làm:**
+
+- [x] **Nghiệp vụ mới:** đơn `deposit_paid` (đã cọc 30%) được gửi yêu cầu hủy, không cần trả đủ.
+- [x] **Cách tính phạt:** vẫn 4 mốc (≥15 ngày 10%, 10–14 ngày 50%, 7–9 ngày 70%, <7 ngày 100%) nhưng áp trên **tổng giá tour** thay vì số đã trả; phí phạt không vượt quá số đã trả; hoàn = đã trả − phạt (không âm). Phần chưa thanh toán không bị truy thu.
+  - Ví dụ: tour 10.000.000đ, cọc 3.000.000đ, còn ≥15 ngày → phạt 1.000.000đ, hoàn 2.000.000đ.
+- [x] **Chốt mốc tại thời điểm khách bấm hủy:** lưu snapshot `refund_penalty_pct`, `refund_amount`, `refund_days_remaining` vào booking; admin duyệt sau vài ngày vẫn dùng đúng mốc cũ.
+- [x] Backend: `resolveRefundQuote()` đọc snapshot nếu có; admin duyệt dùng số đã chốt (không tin số tiền client gửi, chỉ cho ≤ chính sách); từ chối yêu cầu hủy sẽ xóa snapshot. Admin duyệt ghi thêm `refund_method/refund_provider_ref/refund_note/refunded_at/cancel_reason/cancelled_at`.
+- [x] Frontend: nút hủy hiện cho cả `deposit_paid` (chỉ khi đơn `confirmed` và trước khởi hành); ẩn nút thanh toán khi đang chờ hủy; modal hủy hiển thị tổng giá tour / đã cọc / phí phạt / hoàn lại + ghi chú không truy thu phần còn lại. Modal admin hiển thị snapshot và tổng giá tour.
+- [x] Chặn thanh toán (tạo URL VNPay / link email) khi đơn đang `cancel_requested` để khách không vừa xin hủy vừa trả nốt.
+- [x] Migration `20261103_000018_add_booking_refund_snapshot.js` (có `hasColumn` guard vì DB dev đã có một số cột refund thêm tay).
+
+**File liên quan:**
+
+- Thêm: `backend/db/migrations/20261103_000018_add_booking_refund_snapshot.js`
+- Sửa:
+  - `backend/src/features/admin/bookings/refund.service.js`
+  - `backend/src/features/admin/bookings/booking.service.js`
+  - `backend/src/features/admin/bookings/booking.controller.js`
+  - `backend/src/features/admin/bookings/booking.repository.js`
+  - `backend/src/features/booking/booking.service.js`
+  - `backend/src/features/booking/booking.repository.js`
+  - `frontend/src/features/user/bookings/BookingDetail/BookingHeader.jsx`
+  - `frontend/src/features/user/bookings/BookingDetail/CancelModal.jsx`
+  - `frontend/src/features/user/bookings/BookingDetail/index.jsx`
+  - `frontend/src/features/admin/bookings/BookingDetail/AdminRefundModal.jsx`
+
+**Kiểm tra:**
+
+- `npm run migrate` (backend) chạy migration mới thành công.
+- Test service trên booking #52 (tour 4.200.000đ, cọc 1.260.000đ, còn 37 ngày): phạt 420.000đ, hoàn 840.000đ; DB lưu đúng snapshot; admin đọc lại đúng snapshot; từ chối hủy xóa snapshot và về `confirmed`.
+- `npm run lint` + `npm run build` (frontend) pass.
+
+---
+
+### 2026-11-03 — Bổ sung Module 6 "Thống kê Booking & Tổng quan Admin" vào cẩm nang vấn đáp
+
+**Đã làm:**
+
+- [x] Thêm section `#mod-stats` + link sidebar (Module 6) vào `van_dap_viettour.html`: kịch bản 30 giây, sơ đồ Mermaid luồng `/admin/bookings` (stats, trips, top-packages, danh sách) và `/admin` (một endpoint gộp 11 truy vấn song song + shell), bảng file code, câu hỏi phản biện.
+- [x] Cập nhật tiêu đề/hero từ 5 module → 6 module; đồng bộ bản trong `docs/`.
+
+**File liên quan:**
+
+- Sửa: `van_dap_viettour.html`, `docs/van_dap_viettour.html`, `PROGRESS.md`.
+
+**Kiểm tra:**
+
+- Đếm thẻ `<section>` mở/đóng khớp (8/8); kiểm tra UTF-8 tiếng Việt hiển thị đúng; hai bản root và docs có hash giống nhau.
+
+**Ghi chú / việc còn lại:**
+
+- Trang `/admin/statistics` vẫn là placeholder "đang phát triển"; số liệu thật nằm ở `/admin/bookings` và `/admin`.
+
+---
+
+### 2026-11-03 — Cập nhật biểu đồ luồng hủy tour & hoàn tiền trong tài liệu vấn đáp
+
+**Đã làm:**
+
+- [x] Cập nhật Module 4 (`van_dap_viettour.html` + `docs/van_dap_viettour.html`):
+  - Sơ đồ Mermaid mới: điều kiện hiện nút hủy cho `deposit_paid` HOẶC `paid`, tính phạt trên tổng giá tour, lưu snapshot khi gửi yêu cầu.
+  - Thêm bảng mốc phí phạt kèm ví dụ tour 10.000.000đ / cọc 3.000.000đ để dễ học.
+  - Sửa lại kịch bản 30 giây và 2 câu hỏi phản biện (cọc 30% có được hủy? mốc phạt chốt lúc nào?).
+- [x] Cập nhật Module 5: sơ đồ admin đọc snapshot khi mở modal, transaction ghi `refund_amount/refund_penalty_pct/refund_method/refunded_at/cancel_reason`, từ chối hủy xóa snapshot.
+
+**File liên quan:**
+
+- Sửa: `van_dap_viettour.html`, `docs/van_dap_viettour.html`
+
+**Kiểm tra:**
+
+- Hai file trùng hash sau khi cập nhật; mở HTML kiểm tra cấu trúc card/bảng và sơ đồ Mermaid.
+
+---
+
 ## 8. Mẫu ghi cho lần cập nhật sau
 
 ```md

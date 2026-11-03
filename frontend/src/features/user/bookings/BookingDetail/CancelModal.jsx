@@ -5,8 +5,12 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
     const b = booking;
 
     const penaltyPct = refundInfo?.penaltyPct ?? 0;
+    const penaltyAmount = refundInfo?.penaltyAmount ?? 0;
     const refundAmount = refundInfo?.refundAmount ?? 0;
-    const daysRemaining = refundInfo?.daysDiff ?? 0;
+    const daysRemaining = refundInfo?.daysDiff;
+    const totalAmount = refundInfo?.totalAmount ?? b.total_price ?? 0;
+    const paidAmount = refundInfo?.paidAmount ?? b.paid_amount ?? 0;
+    const isDeposit = b.payment_status === "deposit_paid";
 
     return (
         <div
@@ -53,28 +57,38 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
                                 Chính sách hoàn tiền áp dụng:
                             </div>
                             <div className="text-xs text-muted leading-relaxed">
-                                • ≥ 15 ngày: phạt 10% (hoàn 90%) <br />
-                                • 10 – 14 ngày: phạt 50% (hoàn 50%) <br />
-                                • 7 – 9 ngày: phạt 70% (hoàn 30%) <br />
-                                • Dưới 7 ngày: phạt 100% (hoàn 0%)
+                                • ≥ 15 ngày: phạt 10% giá tour <br />
+                                • 10 – 14 ngày: phạt 50% giá tour <br />
+                                • 7 – 9 ngày: phạt 70% giá tour <br />
+                                • Dưới 7 ngày: phạt 100% giá tour (không hoàn)
+                            </div>
+                            <div className="text-xs text-muted leading-relaxed">
+                                Phí phạt tính trên tổng giá tour nhưng không vượt quá số tiền bạn đã trả.
+                                Mốc phạt được chốt ngay khi bạn gửi yêu cầu hủy.
                             </div>
                         </div>
 
                         <div className="bg-slate-50 rounded-xl p-4 border border-border space-y-2 text-sm">
                             <div className="flex justify-between items-center text-muted">
                                 <span>Thời gian đến ngày khởi hành:</span>
-                                <span className="font-semibold text-foreground">{daysRemaining} ngày</span>
+                                <span className="font-semibold text-foreground">{daysRemaining ?? "—"} ngày</span>
                             </div>
                             <div className="flex justify-between items-center text-muted">
-                                <span>Số tiền đã thanh toán:</span>
+                                <span>Tổng giá tour:</span>
                                 <span className="font-semibold text-foreground tabular-nums">
-                                    {formatVnd(refundInfo?.paidAmount || b.paid_amount || b.total_price)}
+                                    {formatVnd(totalAmount)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-muted">
-                                <span>Mức phí phạt ({penaltyPct}%):</span>
+                                <span>{isDeposit ? "Số tiền đã cọc:" : "Số tiền đã thanh toán:"}</span>
+                                <span className="font-semibold text-foreground tabular-nums">
+                                    {formatVnd(paidAmount)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center text-muted">
+                                <span>Mức phí phạt ({penaltyPct}% giá tour):</span>
                                 <span className="font-semibold text-danger tabular-nums">
-                                    - {formatVnd(((refundInfo?.paidAmount || b.paid_amount || b.total_price) * penaltyPct) / 100)}
+                                    - {formatVnd(penaltyAmount)}
                                 </span>
                             </div>
                             <div className="pt-2 border-t border-border flex justify-between items-center">
@@ -83,6 +97,13 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
                                     {formatVnd(refundAmount)}
                                 </span>
                             </div>
+                            {isDeposit && (
+                                <div className="text-xs text-muted leading-relaxed pt-1">
+                                    Đơn của bạn mới đóng cọc {formatVnd(b.deposit_amount)}. Phần còn lại{" "}
+                                    {formatVnd(Math.max(0, totalAmount - paidAmount))} sẽ không bị thu thêm; số hoàn
+                                    được tính trên số tiền đã cọc.
+                                </div>
+                            )}
                         </div>
 
                         <div className="text-xs text-muted italic">

@@ -121,6 +121,13 @@ class AdminBooking {
             .select(
                 "b.id",
                 "b.status",
+                "b.payment_status",
+                "b.total_price",
+                "b.paid_amount",
+                "b.deposit_amount",
+                "b.refund_amount",
+                "b.refund_penalty_pct",
+                "b.refund_days_remaining",
                 "b.departure_id",
                 "b.adults",
                 "b.children",

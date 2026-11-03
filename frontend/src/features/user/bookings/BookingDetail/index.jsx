@@ -82,15 +82,20 @@ export default function BookingDetail() {
 	}, [invoiceOpen, cancelOpen, reviewOpen]);
 
 	const handleOpenCancel = async () => {
+		setRefundInfo(null);
 		setCancelOpen(true);
 		setLoadingRefund(true);
 		try {
 			const res = await getBookingRefundInfo(id);
 			if (res?.success) {
 				setRefundInfo(res.data);
+			} else {
+				setCancelOpen(false);
+				toast.danger(res?.message || "Không thể tính chính sách hoàn tiền");
 			}
-		} catch {
-			// Có fallback tính toán nếu cần
+		} catch (err) {
+			setCancelOpen(false);
+			toast.danger(err?.message || "Không thể tính chính sách hoàn tiền");
 		} finally {
 			setLoadingRefund(false);
 		}

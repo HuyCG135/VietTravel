@@ -216,6 +216,25 @@ class Booking {
         return updated > 0;
     }
 
+    // Khách gửi yêu cầu hủy: đổi status + CHỐT SNAPSHOT mốc phạt tại thời điểm bấm hủy.
+    // Snapshot (refund_penalty_pct / refund_days_remaining / refund_amount) để admin duyệt
+    // sau vài ngày vẫn dùng đúng mốc cũ, không bị phạt nặng hơn do chờ duyệt.
+    // Conditional update: chỉ đơn đã cọc / đã trả đủ và chưa hủy mới đổi được.
+    static async requestCancellation(id, { refundAmount, penaltyPct, daysRemaining }) {
+        const updated = await db("bookings")
+            .where("id", id)
+            .whereIn("payment_status", ["deposit_paid", "paid"])
+            .whereNotIn("status", ["cancel_requested", "cancelled"])
+            .update({
+                status: "cancel_requested",
+                refund_amount: Number(refundAmount) || 0,
+                refund_penalty_pct: Number(penaltyPct) || 0,
+                refund_days_remaining: Number(daysRemaining) || 0,
+                updated_at: new Date(),
+            });
+        return updated > 0;
+    }
+
     // Hủy booking nếu chưa cancelled/paid — trả về true nếu VỪA đổi trạng thái thành công.
     // Dùng cho lazy-check/sweep/job: 2 request song song chỉ 1 bên trả lời true → không restore ghế 2 lần.
     // reason: 'balance_expired' | 'user' | 'admin'

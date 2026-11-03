@@ -47,7 +47,8 @@ export default function AdminRefundModal({
     const penaltyPct = refundData?.penaltyPct ?? 0;
     const refundAmount = refundData?.refundAmount ?? 0;
     const paidAmount = refundData?.paidAmount ?? booking.paid_amount ?? booking.total_price;
-    const penaltyAmount = Math.round((paidAmount * penaltyPct) / 100);
+    const totalAmount = refundData?.totalAmount ?? booking.total_price ?? 0;
+    const penaltyAmount = refundData?.penaltyAmount ?? Math.round((totalAmount * penaltyPct) / 100);
 
     return (
         <div
@@ -100,23 +101,35 @@ export default function AdminRefundModal({
                                 Chính sách hoàn tiền tự động tính:
                             </div>
                             <div className="grid grid-cols-2 gap-2 pt-1 text-slate-600">
-                                <div>• ≥ 15 ngày: phạt 10% (hoàn 90%)</div>
-                                <div>• 10 – 14 ngày: phạt 50% (hoàn 50%)</div>
-                                <div>• 7 – 9 ngày: phạt 70% (hoàn 30%)</div>
-                                <div>• Dưới 7 ngày: phạt 100% (hoàn 0%)</div>
+                                <div>• ≥ 15 ngày: phạt 10% giá tour</div>
+                                <div>• 10 – 14 ngày: phạt 50% giá tour</div>
+                                <div>• 7 – 9 ngày: phạt 70% giá tour</div>
+                                <div>• Dưới 7 ngày: phạt 100% giá tour</div>
+                            </div>
+                            <div className="pt-1">
+                                Phí phạt tính trên tổng giá tour, không vượt quá số khách đã trả.
+                                {refundData?.snapshot ? " Mốc phạt đã chốt lúc khách gửi yêu cầu hủy." : ""}
                             </div>
                         </div>
 
                         {/* Chi tiết tính toán */}
                         <div className="rounded-xl border border-border p-4 space-y-2.5 text-sm">
                             <div className="flex justify-between items-center text-muted">
-                                <span>Số ngày trước khởi hành:</span>
-                                <span className="font-semibold text-foreground">{refundData?.daysRemaining ?? "—"} ngày</span>
+                                <span>Thời gian trước khởi hành (lúc yêu cầu):</span>
+                                <span className="font-semibold text-foreground">
+                                    {refundData?.daysRemaining ?? "—"} ngày
+                                </span>
                             </div>
                             <div className="flex justify-between items-center text-muted">
                                 <span>Khung áp dụng:</span>
                                 <span className="font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
                                     {refundData?.ruleLabel || "—"}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center text-muted">
+                                <span>Tổng giá tour:</span>
+                                <span className="font-semibold text-foreground tabular-nums">
+                                    {formatVnd(totalAmount)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-muted">

@@ -14,12 +14,12 @@ export default function BookingHeader({
 }) {
 	const b = booking;
 
-	// Yêu cầu: Nút hủy chỉ xuất hiện khi khách đã thanh toán đầy đủ (paid),
-	// chưa gửi yêu cầu hủy (cancel_requested), chưa bị hủy (cancelled) và chưa qua ngày khởi hành
+	// Yêu cầu: Nút hủy xuất hiện khi khách đã đặt cọc (deposit_paid) hoặc đã thanh toán đầy đủ (paid),
+	// chưa gửi yêu cầu hủy (cancel_requested), chưa bị hủy (cancelled) và chưa qua ngày khởi hành.
+	// Đơn đã cọc vẫn được hủy: phạt tính trên tổng giá tour, phần chưa trả không bị truy thu.
 	const canRequestCancel =
-		b.payment_status === "paid" &&
-		b.status !== "cancel_requested" &&
-		b.status !== "cancelled" &&
+		["deposit_paid", "paid"].includes(b.payment_status) &&
+		b.status === "confirmed" &&
 		isBeforeDeparture;
 
 	return (
@@ -58,7 +58,7 @@ export default function BookingHeader({
 						Đã đánh giá
 					</span>
 				)}
-				{b.payment_status !== "paid" && b.status !== "cancelled" && (
+				{b.payment_status !== "paid" && b.status !== "cancelled" && b.status !== "cancel_requested" && (
 					<button
 						type="button"
 						onClick={onOpenPay}

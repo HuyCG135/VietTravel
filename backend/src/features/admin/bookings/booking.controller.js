@@ -8,7 +8,7 @@ import {
     refundBookingService,
     rejectCancelBookingService,
 } from "./booking.service.js";
-import { calculateRefund } from "./refund.service.js";
+import { resolveRefundQuote } from "./refund.service.js";
 
 const handleError = (res, error) => {
     // Lỗi nghiệp vụ có status (400/403/404) → trả thẳng message.
@@ -130,7 +130,7 @@ export const getRefundInfo = async (req, res) => {
             return res.status(404).json({ success: false, message: "Không tìm thấy booking" });
         }
 
-        const info = calculateRefund(booking.departure_date, booking.paid_amount);
+        const info = resolveRefundQuote(booking);
 
         res.json({
             success: true,
@@ -138,12 +138,15 @@ export const getRefundInfo = async (req, res) => {
                 bookingId: booking.id,
                 status: booking.status,
                 paymentStatus: booking.payment_status,
-                paidAmount: booking.paid_amount,
+                paidAmount: info.paidAmount,
+                totalAmount: info.totalAmount,
                 departureDate: booking.departure_date,
                 daysRemaining: info.daysDiff,
                 penaltyPct: info.penaltyPct,
+                penaltyAmount: info.penaltyAmount,
                 ruleLabel: info.ruleLabel,
                 refundAmount: info.refundAmount,
+                snapshot: info.snapshot,
                 refundedAt: booking.refunded_at || null,
             },
         });
@@ -171,7 +174,7 @@ export const refundBooking = async (req, res) => {
             });
         }
 
-        const info = calculateRefund(booking.departure_date, booking.paid_amount);
+        const info = resolveRefundQuote(booking);
         const requestedAmount = Number(req.body?.refundAmount);
         const refundAmount = Number.isFinite(requestedAmount) && requestedAmount > 0
             ? Math.min(requestedAmount, info.refundAmount)
@@ -179,6 +182,7 @@ export const refundBooking = async (req, res) => {
 
         const data = await refundBookingService(bookingId, {
             refundAmount,
+            refundPenaltyPct: info.penaltyPct,
             refundMethod: req.body?.refundMethod || "chuyen_khoan",
             providerRef: req.body?.providerRef || null,
             note: req.body?.note || null,
