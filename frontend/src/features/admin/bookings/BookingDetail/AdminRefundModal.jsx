@@ -101,6 +101,9 @@ export default function AdminRefundModal({
                                 Chính sách hoàn tiền tự động tính:
                             </div>
                             <div className="grid grid-cols-2 gap-2 pt-1 text-slate-600">
+                                <div className="col-span-2 text-emerald-700">
+                                    • Trong 24h kể từ khi đặt cọc: miễn phí hủy (hoàn 100% số đã trả)
+                                </div>
                                 <div>• ≥ 15 ngày: phạt 10% giá tour</div>
                                 <div>• 10 – 14 ngày: phạt 50% giá tour</div>
                                 <div>• 7 – 9 ngày: phạt 70% giá tour</div>
@@ -111,6 +114,14 @@ export default function AdminRefundModal({
                                 {refundData?.snapshot ? " Mốc phạt đã chốt lúc khách gửi yêu cầu hủy." : ""}
                             </div>
                         </div>
+
+                        {refundData?.graceActive && (
+                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 leading-relaxed">
+                                <i className="fa-solid fa-circle-check mr-1.5" />
+                                Yêu cầu hủy được gửi trong <b>24h kể từ khi đặt cọc</b> nên được
+                                <b> miễn toàn bộ phí phạt</b>, hoàn lại 100% số tiền khách đã trả.
+                            </div>
+                        )}
 
                         {/* Chi tiết tính toán */}
                         <div className="rounded-xl border border-border p-4 space-y-2.5 text-sm">
@@ -139,7 +150,11 @@ export default function AdminRefundModal({
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-muted">
-                                <span>Phí phạt hủy ({penaltyPct}%):</span>
+                                <span>
+                                    {refundData?.graceActive
+                                        ? "Phí phạt hủy (miễn phí trong 24h):"
+                                        : `Phí phạt hủy (${penaltyPct}%):`}
+                                </span>
                                 <span className="font-semibold text-danger tabular-nums">
                                     - {formatVnd(penaltyAmount)}
                                 </span>

@@ -147,6 +147,8 @@ export const getRefundInfo = async (req, res) => {
                 ruleLabel: info.ruleLabel,
                 refundAmount: info.refundAmount,
                 snapshot: info.snapshot,
+                graceActive: info.graceActive,
+                graceHoursLeft: info.graceHoursLeft,
                 refundedAt: booking.refunded_at || null,
             },
         });

@@ -108,6 +108,11 @@ class AdminBooking {
                 "d.price_moving_child",
                 "d.seats_total",
                 "d.seats_available",
+                // Thời điểm thanh toán đầu tiên (cọc / trả đủ) — dùng để xét ân hạn 24h khi hủy.
+                db.raw(
+                    "(SELECT MIN(p.paid_at) FROM booking_payments AS p " +
+                        "WHERE p.booking_id = b.id AND p.status = 'paid') AS first_paid_at",
+                ),
                 db.raw("DATE_FORMAT(d.departure_date, '%d/%m/%Y') as departure_date_text"),
             )
             .where("b.id", id)
@@ -131,8 +136,14 @@ class AdminBooking {
                 "b.departure_id",
                 "b.adults",
                 "b.children",
+                "d.departure_date",
                 "d.seats_available",
                 "d.seats_total",
+                // Thời điểm thanh toán đầu tiên (cọc / trả đủ) — dùng để xét ân hạn 24h khi hủy.
+                trx.raw(
+                    "(SELECT MIN(p.paid_at) FROM booking_payments AS p " +
+                        "WHERE p.booking_id = b.id AND p.status = 'paid') AS first_paid_at",
+                ),
             )
             .where("b.id", id);
 

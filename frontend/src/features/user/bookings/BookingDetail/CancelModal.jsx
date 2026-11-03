@@ -57,6 +57,7 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
                                 Chính sách hoàn tiền áp dụng:
                             </div>
                             <div className="text-xs text-muted leading-relaxed">
+                                • Trong 24h kể từ khi đặt cọc: <b>miễn phí hủy</b> (hoàn 100% số đã trả) <br />
                                 • ≥ 15 ngày: phạt 10% giá tour <br />
                                 • 10 – 14 ngày: phạt 50% giá tour <br />
                                 • 7 – 9 ngày: phạt 70% giá tour <br />
@@ -67,6 +68,17 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
                                 Mốc phạt được chốt ngay khi bạn gửi yêu cầu hủy.
                             </div>
                         </div>
+
+                        {refundInfo?.graceActive && (
+                            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 leading-relaxed">
+                                <i className="fa-solid fa-circle-check mr-1.5" />
+                                Bạn đang trong <b>24h miễn phí hủy</b> kể từ khi đặt cọc
+                                {refundInfo?.graceHoursLeft != null
+                                    ? ` (còn khoảng ${refundInfo.graceHoursLeft} giờ)`
+                                    : ""}
+                                . Hủy lúc này sẽ được hoàn lại <b>toàn bộ số tiền đã trả</b>.
+                            </div>
+                        )}
 
                         <div className="bg-slate-50 rounded-xl p-4 border border-border space-y-2 text-sm">
                             <div className="flex justify-between items-center text-muted">
@@ -86,7 +98,11 @@ export default function CancelModal({ booking, refundInfo, loadingRefund, open, 
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-muted">
-                                <span>Mức phí phạt ({penaltyPct}% giá tour):</span>
+                                <span>
+                                    {refundInfo?.graceActive
+                                        ? "Mức phí phạt (miễn phí trong 24h):"
+                                        : `Mức phí phạt (${penaltyPct}% giá tour):`}
+                                </span>
                                 <span className="font-semibold text-danger tabular-nums">
                                     - {formatVnd(penaltyAmount)}
                                 </span>

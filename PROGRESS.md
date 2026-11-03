@@ -876,6 +876,41 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Bổ sung ân hạn 24h miễn phí hủy sau khi đặt cọc
+
+**Đã làm:**
+
+- [x] **Nghiệp vụ mới:** khách thanh toán lần đầu (cọc hoặc trả đủ) trong vòng **24h** mà gửi yêu cầu hủy → **miễn phạt 100%**, hoàn lại toàn bộ số đã trả.
+- [x] Quá 24h mới áp bảng mốc theo ngày khởi hành: ≥15 ngày phạt 10%, 10–14 ngày 50%, 7–9 ngày 70%, <7 ngày 100% trên **tổng giá tour**; phí phạt vẫn không vượt quá số đã trả.
+- [x] Backend `refund.service.js`: thêm `resolveGraceWindow()` + tham số `firstPaidAt` cho `calculateRefund()`; quote trả thêm `graceActive` / `graceHoursLeft`; snapshot `refund_penalty_pct = 0` được nhận diện là mốc miễn phạt.
+- [x] Xác định thời điểm thanh toán đầu tiên bằng subquery `MIN(booking_payments.paid_at)` (status `paid`) gắn vào `first_paid_at` ở cả query user và admin — không cần thêm cột DB.
+- [x] API admin `GET /bookings/:id/refund-info` trả thêm `graceActive` / `graceHoursLeft`.
+- [x] Frontend: modal hủy của khách và modal duyệt hoàn tiền của admin hiển thị dòng "Trong 24h kể từ khi đặt cọc: miễn phí hủy (hoàn 100% số đã trả)" + banner xanh khi đơn đang trong thời gian ân hạn.
+
+**File liên quan:**
+
+- Sửa:
+  - `backend/src/features/admin/bookings/refund.service.js`
+  - `backend/src/features/admin/bookings/booking.repository.js`
+  - `backend/src/features/admin/bookings/booking.controller.js`
+  - `backend/src/features/booking/booking.repository.js`
+  - `frontend/src/features/user/bookings/BookingDetail/CancelModal.jsx`
+  - `frontend/src/features/admin/bookings/BookingDetail/AdminRefundModal.jsx`
+
+**Kiểm tra:**
+
+- `npm run migrate` (backend) áp migration còn treo `20261103_000018_add_booking_refund_snapshot.js` — DB dev trước đó thiếu các cột `refund_*` khiến luồng hủy/duyệt hoàn tiền lỗi `Unknown column`.
+- Test `calculateRefund()`: cọc 2h trước → phạt 0, hoàn đủ; cọc 25h trước + còn 20 ngày → phạt 10%, hoàn 90%; còn 5 ngày → phạt 100%, hoàn 0.
+- Test `getBookingRefundInfoService(58)` trả `graceActive: true`, `graceHoursLeft` đúng; `findRawById()` đọc đúng `first_paid_at` và `departure_date`.
+- `npm run lint` (frontend) pass.
+
+**Ghi chú / việc cần lưu ý:**
+
+- Sửa kèm lỗi cũ: query `AdminBooking.findRawById()` thiếu `d.departure_date` khiến admin duyệt đơn không có snapshot bị tính `daysDiff = 0` → phạt 100%. Đã bổ sung cột này.
+- Đơn cũ không có row `booking_payments` status `paid` sẽ không được hưởng ân hạn (không xác định được mốc thanh toán) — vẫn áp bảng mốc ngày như trước.
+
+---
+
 ### 2026-11-03 — Bổ sung Module 6 "Thống kê Booking & Tổng quan Admin" vào cẩm nang vấn đáp
 
 **Đã làm:**

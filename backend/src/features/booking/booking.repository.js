@@ -65,6 +65,11 @@ class Booking {
                 "d.departure_location",
                 "d.price_moving",
                 "d.price_moving_child",
+                // Thời điểm thanh toán đầu tiên (cọc / trả đủ) — dùng để xét ân hạn 24h khi hủy.
+                db.raw(
+                    "(SELECT MIN(p.paid_at) FROM booking_payments AS p " +
+                        "WHERE p.booking_id = b.id AND p.status = 'paid') AS first_paid_at",
+                ),
             )
             .where("b.id", id)
             .first();
