@@ -5,6 +5,7 @@ const SIZE_CLASSES = {
     md: "max-w-xl",
     lg: "max-w-3xl",
     xl: "max-w-5xl",
+    "2xl": "max-w-6xl",
 };
 
 // Modal shell dùng chung cho toàn app:
@@ -19,6 +20,7 @@ export default function Modal({
     showClose = true,
     closeOnBackdrop = true,
     ariaLabel = "Hộp thoại",
+    className = "",
 }) {
     useEffect(() => {
         if (!open) return undefined;
@@ -54,9 +56,9 @@ export default function Modal({
                 role="dialog"
                 aria-modal="true"
                 aria-label={ariaLabel}
-                className={`relative w-full ${
+                className={`custom-scrollbar relative w-full ${
                     SIZE_CLASSES[size] ?? SIZE_CLASSES.md
-                } max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl bg-surface shadow-2xl ring-1 ring-slate-900/10 animate-modal-in`}
+                } max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl bg-surface shadow-2xl ring-1 ring-slate-900/10 animate-modal-in ${className}`.trim()}
             >
                 {showClose && (
                     <button

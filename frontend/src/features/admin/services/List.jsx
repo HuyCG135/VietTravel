@@ -11,6 +11,7 @@ import ServiceFormModal from "./ServiceFormModal";
 import Pagination from "../../tours/Pagination";
 import SearchBox from "../../../components/SearchBox";
 import SelectMenu from "../../../components/SelectMenu";
+import Modal from "../../../components/Modal";
 
 const formatDate = (value) => {
     if (!value) return "—";
@@ -407,17 +408,15 @@ export default function ServiceList() {
             )}
 
             {deleting && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="delete-service-title"
-                    onClick={() => !deletingLoading && setDeleting(null)}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+                <Modal
+                    open
+                    onClose={deletingLoading ? undefined : () => setDeleting(null)}
+                    closeOnBackdrop={!deletingLoading}
+                    size="sm"
+                    showClose={false}
+                    ariaLabel="Xác nhận xóa dịch vụ"
                 >
-                    <div
-                        className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl motion-safe:animate-toast-in"
-                        onClick={(event) => event.stopPropagation()}
-                    >
+                    <div className="p-6">
                         <h3 id="delete-service-title" className="mb-3 flex items-center gap-2 text-lg font-bold text-danger">
                             <i className="fa-solid fa-triangle-exclamation" />
                             Xóa dịch vụ
@@ -449,7 +448,7 @@ export default function ServiceList() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
         </div>
     );
