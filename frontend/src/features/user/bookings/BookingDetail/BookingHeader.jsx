@@ -4,6 +4,7 @@ import { formatDateTime } from "../bookingFormat";
 export default function BookingHeader({
 	booking,
 	isCompleted,
+	isBeforeDeparture,
 	hasReviewed,
 	onOpenReview,
 	onOpenInvoice,

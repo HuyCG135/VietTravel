@@ -4,6 +4,7 @@ import Loading from "../../../../components/Loading";
 import { useToast } from "../../../../context/ToastContext";
 import {
 	getBookingDetail,
+	getBookingRefundInfo,
 	cancelBooking,
 	createPaymentUrl,
 } from "../booking.api";
@@ -227,6 +228,7 @@ export default function BookingDetail() {
 					<BookingHeader
 						booking={b}
 						isCompleted={isCompleted}
+						isBeforeDeparture={isBeforeDeparture}
 						hasReviewed={hasReviewed}
 						onOpenReview={() => setReviewOpen(true)}
 						onOpenInvoice={() => setInvoiceOpen(true)}
