@@ -820,6 +820,26 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/admin/bookings/top-packages?ra
 
 ---
 
+### 2026-11-03 — Gộp `origin/main` và sửa lỗi lint chặn build
+
+**Đã làm:**
+
+- [x] Fetch + merge `origin/main` (nhánh remote có commit `74ad372 "sleep"` sửa hiệu ứng modal) vào `main` local; xử lý conflict duy nhất ở `PROGRESS.md` bằng cách giữ lại cả hai mục lịch sử.
+- [x] Sửa lỗi lint tồn tại ở luồng hủy booking phía user:
+  - `BookingDetail/index.jsx`: import `getBookingRefundInfo` từ `booking.api.js` và truyền prop `isBeforeDeparture` xuống `BookingHeader`.
+  - `BookingDetail/BookingHeader.jsx`: nhận prop `isBeforeDeparture` (trước đó dùng biến chưa khai báo).
+
+**File liên quan:**
+
+- Sửa: `PROGRESS.md`, `frontend/src/features/user/bookings/BookingDetail/index.jsx`, `frontend/src/features/user/bookings/BookingDetail/BookingHeader.jsx`
+
+**Kiểm tra:**
+
+- `npm run lint` (frontend) pass, không còn lỗi.
+- `npm run build` (frontend) pass (2716 modules).
+
+---
+
 ## 8. Mẫu ghi cho lần cập nhật sau
 
 ```md
